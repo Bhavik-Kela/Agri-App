@@ -1,5 +1,10 @@
-import RegisterScreen from "./src/screens/RegisterScreen";
+import { SafeAreaProvider } from "react-native-safe-area-context";
+import AppNavigator from "./navigation/AppNavigator";
 
 export default function App() {
-  return <RegisterScreen />;
+  return (
+    <SafeAreaProvider>
+      <AppNavigator />
+    </SafeAreaProvider>
+  );
 }
