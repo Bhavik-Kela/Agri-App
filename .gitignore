@@ -1,2 +1,8 @@
 .env
 node_modules/
+
+PORT = 5000
+
+MONGO_URI = mongodb://127.0.0.1:27017/agriapp
+
+JWT_SECRET = supersecretkey
