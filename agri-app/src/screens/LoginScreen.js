@@ -1,12 +1,13 @@
 import React, { useState } from "react";
 import { Text, Pressable, Alert } from "react-native";
-import API from "../../services/api";
-import AuthLayout from "./components/AuthLayout";
-import FieldInput from "./components/FieldInput";
-import GradientButton from "./components/GradientButton";
-import { colors, typography } from "./theme/theme";
+import AuthLayout from "../components/AuthLayout";
+import FieldInput from "../components/FieldInput";
+import GradientButton from "../components/GradientButton";
+import { useAuth } from "../context/AuthContext";
+import { colors, typography } from "../theme/theme";
 
 export default function LoginScreen({ navigation }) {
+  const { login } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -14,17 +15,21 @@ export default function LoginScreen({ navigation }) {
   const handleLogin = async () => {
     setLoading(true);
     try {
-      const res = await API.post("/auth/login", { email, password });
+      const res = await login(email, password);
 
-      // Expecting the backend to return a user object and/or token.
-      // Adjust this destructure once your friend confirms the response shape.
-      const user = res.data?.user || res.data;
-
-      Alert.alert("Welcome back", res.data?.message || "Logged in successfully");
-      navigation?.navigate?.("Profile", { user });
+      Alert.alert(
+        "Welcome back",
+        res?.message || "Logged in successfully"
+      );
     } catch (err) {
-      console.log(err.response?.data);
-      Alert.alert("Error", "Login failed. Check your email and password.");
+      console.log("ERROR:", err);
+      console.log("MESSAGE:", err?.message);
+      console.log("RESPONSE:", err?.response?.data);
+
+      Alert.alert(
+        "Error",
+        err?.response?.data?.message || err?.message || "Login failed"
+      );
     } finally {
       setLoading(false);
     }

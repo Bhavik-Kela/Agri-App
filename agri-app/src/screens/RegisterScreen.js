@@ -1,11 +1,11 @@
 import React, { useState } from "react";
 import { Text, Pressable, Alert } from "react-native";
 import API from "../../services/api";
-import AuthLayout from "./components/AuthLayout";
-import FieldInput from "./components/FieldInput";
-import RoleSelector from "./components/RoleSelector";
-import GradientButton from "./components/GradientButton";
-import { colors, spacing, typography } from "./theme/theme";
+import AuthLayout from "../components/AuthLayout";
+import FieldInput from "../components/FieldInput";
+import RoleSelector from "../components/RoleSelector";
+import GradientButton from "../components/GradientButton";
+import { colors, spacing, typography } from "../theme/theme";
 
 export default function RegisterScreen({ navigation }) {
   const [name, setName] = useState("");

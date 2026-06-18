@@ -1,31 +1,29 @@
 import React from "react";
-import { View, Text, StyleSheet, Pressable } from "react-native";
+import { View, Text, StyleSheet } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { LinearGradient } from "expo-linear-gradient";
-import GradientButton from "./components/GradientButton";
-import { colors, gradients, radius, spacing, typography } from "./theme/theme";
+import GradientButton from "../components/GradientButton";
+import { useAuth } from "../context/AuthContext";
+import { colors, gradients, radius, spacing, typography } from "../theme/theme";
 
 const ROLE_META = {
   farmer: { icon: "🌾", label: "Farmer" },
   buyer: { icon: "🛒", label: "Buyer" },
 };
 
-export default function HomeScreen({ route, navigation }) {
-  // Expecting { user: { name, email, role } } passed via navigation params
-  // from LoginScreen once the backend confirms its response shape.
-  const user = route?.params?.user || {
+export default function HomeScreen({ route }) {
+  const { logout, user: authUser } = useAuth();
+
+  const user = route?.params?.user || authUser || {
     name: "Your name",
     email: "your@email.com",
     role: "farmer",
   };
 
-  const roleMeta = ROLE_META[user.role] || ROLE_META.farmer;
+  const roleMeta = ROLE_META[user?.role] || ROLE_META.farmer;
 
-  const handleLogout = () => {
-    navigation?.reset?.({
-      index: 0,
-      routes: [{ name: "Login" }],
-    });
+  const handleLogout = async () => {
+    await logout();
   };
 
   return (
@@ -37,7 +35,7 @@ export default function HomeScreen({ route, navigation }) {
         style={styles.header}
       >
         <Text style={styles.eyebrow}>Your profile</Text>
-        <Text style={styles.headerTitle}>{user.name}</Text>
+        <Text style={styles.headerTitle}>{user?.name || "Your name"}</Text>
       </LinearGradient>
 
       <View style={styles.content}>
@@ -62,7 +60,7 @@ export default function HomeScreen({ route, navigation }) {
               <Text style={styles.rowIcon}>✉️</Text>
               <View>
                 <Text style={typography.label}>Email</Text>
-                <Text style={styles.rowValue}>{user.email}</Text>
+                <Text style={styles.rowValue}>{user?.email || "your@email.com"}</Text>
               </View>
             </View>
           </View>
