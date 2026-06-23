@@ -1,5 +1,5 @@
 import React from "react";
-import { View, Text, Pressable, StyleSheet } from "react-native";
+import { View, Text, Pressable, StyleSheet, Image } from "react-native";
 import { colors, radius, spacing, typography } from "../theme/theme";
 
 const CATEGORY_ICONS = {
@@ -12,6 +12,7 @@ const CATEGORY_ICONS = {
 
 export default function ProductCard({ product, onPress, footer }) {
   const icon = CATEGORY_ICONS[product?.category] || CATEGORY_ICONS.Other;
+  const displayPrice = product?.pricePerUnit ? `₹${product.pricePerUnit}/${product.unit}` : `₹${product?.price}`;
 
   return (
     <Pressable
@@ -19,18 +20,30 @@ export default function ProductCard({ product, onPress, footer }) {
       style={({ pressed }) => [styles.card, pressed && styles.pressed]}
     >
       <View style={styles.iconWrap}>
-        <Text style={styles.icon}>{icon}</Text>
+        {product?.photo ? (
+          <Image
+            source={{ uri: product.photo }}
+            style={styles.productImage}
+          />
+        ) : (
+          <Text style={styles.icon}>{icon}</Text>
+        )}
       </View>
 
       <View style={styles.info}>
         <Text style={styles.name} numberOfLines={1}>
           {product?.name}
         </Text>
+        {product?.otherProductName && (
+          <Text style={styles.otherName}>{product.otherProductName}</Text>
+        )}
         <Text style={styles.category}>{product?.category}</Text>
         <View style={styles.metaRow}>
-          <Text style={styles.price}>₹{product?.price}</Text>
+          <Text style={styles.price}>{displayPrice}</Text>
           <Text style={styles.dot}>·</Text>
-          <Text style={styles.quantity}>{product?.quantity} units</Text>
+          <Text style={styles.quantity}>
+            {product?.quantity} {product?.unit || 'units'}
+          </Text>
         </View>
       </View>
 
@@ -66,9 +79,15 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     marginRight: spacing.md,
+    overflow: "hidden",
   },
   icon: {
     fontSize: 26,
+  },
+  productImage: {
+    width: "100%",
+    height: "100%",
+    resizeMode: "cover",
   },
   info: {
     flex: 1,
@@ -76,6 +95,12 @@ const styles = StyleSheet.create({
   name: {
     ...typography.title,
     fontSize: 16,
+  },
+  otherName: {
+    fontSize: 12,
+    color: colors.textSecondary,
+    marginTop: 2,
+    fontStyle: "italic",
   },
   category: {
     ...typography.label,

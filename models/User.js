@@ -28,6 +28,26 @@ const userSchema = new mongoose.Schema(
           "admin"
         ],
         default: "farmer"
+    },
+
+    phone: {
+        type: String,
+        default: ""
+    },
+
+    addresses: [{
+        _id: mongoose.Schema.Types.ObjectId,
+        label: String,
+        street: String,
+        city: String,
+        state: String,
+        zipCode: String,
+        isDefault: Boolean
+    }],
+
+    profilePhoto: {
+        type: String,
+        default: ""
     }
 },
 {

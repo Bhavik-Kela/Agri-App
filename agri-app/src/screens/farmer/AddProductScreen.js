@@ -10,19 +10,43 @@ export default function AddProductScreen({ navigation }) {
   const [values, setValues] = useState({
     name: "",
     price: "",
+    pricePerUnit: "",
     quantity: "",
+    unit: "kg",
     category: "Vegetable",
+    photo: "",
+    otherProductName: "",
   });
   const [submitting, setSubmitting] = useState(false);
 
   const handleSubmit = async () => {
     setSubmitting(true);
     try {
-      await API.post("/products", {
-        name: values.name.trim(),
-        price: Number(values.price),
-        quantity: Number(values.quantity),
-        category: values.category,
+      const formData = new FormData();
+      formData.append("name", values.name.trim());
+      formData.append("price", Number(values.price));
+      formData.append("pricePerUnit", Number(values.pricePerUnit || 0));
+      formData.append("quantity", Number(values.quantity));
+      formData.append("unit", values.unit);
+      formData.append("category", values.category);
+      if (values.otherProductName) {
+        formData.append("otherProductName", values.otherProductName);
+      }
+      
+      if (values.photo) {
+        const uriParts = values.photo.split('.');
+        const fileType = uriParts[uriParts.length - 1];
+        formData.append("photo", {
+          uri: values.photo,
+          name: `photo.${fileType}`,
+          type: `image/${fileType}`,
+        });
+      }
+
+      await API.post("/products", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
       });
 
       Alert.alert("Success", "Product added successfully");

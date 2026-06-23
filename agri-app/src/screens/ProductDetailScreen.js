@@ -1,5 +1,12 @@
 import React, { useCallback, useState } from "react";
-import { View, Text, ScrollView, StyleSheet, Alert } from "react-native";
+import {
+  View,
+  Text,
+  ScrollView,
+  StyleSheet,
+  Alert,
+  TextInput,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useFocusEffect } from "@react-navigation/native";
 import API from "../../services/api";
@@ -23,6 +30,8 @@ export default function ProductDetailScreen({ route, navigation }) {
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
   const [deleting, setDeleting] = useState(false);
+  const [placingOrder, setPlacingOrder] = useState(false);
+  const [quantity, setQuantity] = useState("1");
 
   const fetchProduct = useCallback(async () => {
     try {
@@ -85,6 +94,40 @@ export default function ProductDetailScreen({ route, navigation }) {
     );
   };
 
+  const handlePlaceOrder = async () => {
+    const qty = Number(quantity);
+
+    if (!Number.isFinite(qty) || qty <= 0) {
+      Alert.alert("Error", "Please enter a valid quantity");
+      return;
+    }
+
+    if (qty > Number(product?.quantity || 0)) {
+      Alert.alert("Error", "Requested quantity exceeds available stock");
+      return;
+    }
+
+    try {
+      setPlacingOrder(true);
+      await API.post("/orders", {
+        productId,
+        quantity: qty,
+      });
+
+      Alert.alert("Success", "Order placed successfully");
+      await fetchProduct();
+      setQuantity("1");
+    } catch (err) {
+      console.log(err?.response?.data);
+      Alert.alert(
+        "Error",
+        err?.response?.data?.message || "Could not place order"
+      );
+    } finally {
+      setPlacingOrder(false);
+    }
+  };
+
   return (
     <SafeAreaView style={styles.safeArea} edges={["top", "bottom"]}>
       <ScreenHeader eyebrow={product.category} title={product.name} />
@@ -127,15 +170,22 @@ export default function ProductDetailScreen({ route, navigation }) {
           </View>
         ) : (
           <View style={styles.actions}>
+            <View style={styles.quantityCard}>
+              <Text style={styles.quantityLabel}>Quantity</Text>
+              <TextInput
+                style={styles.quantityInput}
+                value={quantity}
+                onChangeText={setQuantity}
+                keyboardType="number-pad"
+                selectTextOnFocus
+                placeholder="1"
+              />
+            </View>
+
             <GradientButton
-              title="Place Order (coming soon)"
-              onPress={() =>
-                Alert.alert(
-                  "Not available yet",
-                  "Ordering isn't implemented yet — check back soon!"
-                )
-              }
-              disabled
+              title={placingOrder ? "Placing Order..." : "Place Order"}
+              onPress={handlePlaceOrder}
+              loading={placingOrder}
               style={styles.actionButton}
             />
           </View>
@@ -203,6 +253,26 @@ const styles = StyleSheet.create({
   actions: {
     gap: spacing.md,
     marginTop: spacing.xl,
+  },
+  quantityCard: {
+    backgroundColor: colors.card,
+    borderRadius: radius.lg,
+    padding: spacing.md,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  quantityLabel: {
+    ...typography.label,
+    marginBottom: spacing.xs,
+  },
+  quantityInput: {
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: radius.md,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+    fontSize: 16,
+    color: colors.textPrimary,
   },
   actionButton: {
     width: "100%",

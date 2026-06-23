@@ -23,7 +23,11 @@ export default function HomeScreen({ route }) {
   const roleMeta = ROLE_META[user?.role] || ROLE_META.farmer;
 
   const handleLogout = async () => {
-    await logout();
+    try {
+      await logout();
+    } catch (err) {
+      console.log("Logout error:", err);
+    }
   };
 
   return (

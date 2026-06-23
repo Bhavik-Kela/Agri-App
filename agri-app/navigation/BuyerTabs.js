@@ -4,8 +4,10 @@ import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 
 import MarketplaceScreen from "../src/screens/buyer/MarketplaceScreen";
+import BuyerOrdersScreen from "../src/screens/buyer/BuyerOrdersScreen";
 import ProductDetailScreen from "../src/screens/ProductDetailScreen";
-import HomeScreen from "../src/screens/HomeScreen";
+import ChatScreen from "../src/screens/ChatScreen";
+import ProfileScreen from "../src/screens/ProfileScreen";
 import { colors } from "../src/theme/theme";
 
 const MarketplaceStack = createNativeStackNavigator();
@@ -17,7 +19,24 @@ function MarketplaceStackScreen() {
         name="ProductDetail"
         component={ProductDetailScreen}
       />
+      <MarketplaceStack.Screen
+        name="Chat"
+        component={ChatScreen}
+      />
     </MarketplaceStack.Navigator>
+  );
+}
+
+const OrdersStack = createNativeStackNavigator();
+function OrdersStackScreen() {
+  return (
+    <OrdersStack.Navigator screenOptions={{ headerShown: false }}>
+      <OrdersStack.Screen name="Orders" component={BuyerOrdersScreen} />
+      <OrdersStack.Screen
+        name="Chat"
+        component={ChatScreen}
+      />
+    </OrdersStack.Navigator>
   );
 }
 
@@ -25,6 +44,7 @@ const Tab = createBottomTabNavigator();
 
 const TAB_ICONS = {
   MarketplaceTab: "🛒",
+  OrdersTab: "📦",
   ProfileTab: "👤",
 };
 
@@ -46,8 +66,13 @@ export default function BuyerTabs() {
         options={{ tabBarLabel: "Marketplace" }}
       />
       <Tab.Screen
+        name="OrdersTab"
+        component={OrdersStackScreen}
+        options={{ tabBarLabel: "Orders" }}
+      />
+      <Tab.Screen
         name="ProfileTab"
-        component={HomeScreen}
+        component={ProfileScreen}
         options={{ tabBarLabel: "Profile" }}
       />
     </Tab.Navigator>

@@ -3,12 +3,28 @@ const Product = require("../models/Product");
 // Create Product
 exports.createProduct = async (req, res) => {
   try {
+    const {
+      name,
+      price,
+      pricePerUnit,
+      quantity,
+      unit,
+      category,
+      otherProductName,
+    } = req.body;
+
+    const photoUrl = req.file ? `/uploads/${req.file.filename}` : "";
+
     const product = await Product.create({
-      name: req.body.name,
-      price: req.body.price,
-      quantity: req.body.quantity,
-      category: req.body.category,
-      farmer: req.user.id
+      name,
+      price,
+      pricePerUnit: pricePerUnit || 0,
+      quantity,
+      unit: unit || "kg",
+      category,
+      photo: photoUrl,
+      otherProductName: otherProductName || "",
+      farmer: req.user.id,
     });
 
     res.status(201).json(product);
@@ -28,7 +44,7 @@ exports.getProducts = async (req, res) => {
   try {
 
     const products = await Product.find()
-      .populate("farmer", "name email");
+      .populate("farmer", "name email phone addresses");
 
     res.json(products);
 
@@ -46,7 +62,7 @@ exports.getProductById = async (req, res) => {
   try {
 
     const product = await Product.findById(req.params.id)
-      .populate("farmer", "name email");
+      .populate("farmer", "name email phone addresses");
 
     if (!product) {
       return res.status(404).json({
@@ -82,10 +98,34 @@ exports.updateProduct = async (req, res) => {
       });
     }
 
+    const {
+      name,
+      price,
+      pricePerUnit,
+      quantity,
+      unit,
+      category,
+      otherProductName,
+    } = req.body;
+
+    const updateData = {
+      name,
+      price,
+      pricePerUnit: pricePerUnit || product.pricePerUnit,
+      quantity,
+      unit: unit || product.unit,
+      category,
+      otherProductName: otherProductName || "",
+    };
+
+    if (req.file) {
+      updateData.photo = `/uploads/${req.file.filename}`;
+    }
+
     const updatedProduct =
       await Product.findByIdAndUpdate(
         req.params.id,
-        req.body,
+        updateData,
         { new: true }
       );
 

@@ -4,9 +4,12 @@ import { createNativeStackNavigator } from "@react-navigation/native-stack";
 
 import RegisterScreen from "../src/screens/RegisterScreen";
 import LoginScreen from "../src/screens/LoginScreen";
+import ForgotPasswordScreen from "../src/screens/ForgotPasswordScreen";
 import FarmerTabs from "./FarmerTabs";
 import BuyerTabs from "./BuyerTabs";
 import LoadingSpinner from "../src/components/LoadingSpinner";
+import ChatScreen from "../src/screens/ChatScreen";
+import ProfileScreen from "../src/screens/ProfileScreen";
 import { AuthProvider, useAuth } from "../src/context/AuthContext";
 
 const Stack = createNativeStackNavigator();
@@ -14,11 +17,12 @@ const Stack = createNativeStackNavigator();
 function AuthStack() {
   return (
     <Stack.Navigator
-      initialRouteName="Register"
+      initialRouteName="Login"
       screenOptions={{ headerShown: false }}
     >
-      <Stack.Screen name="Register" component={RegisterScreen} />
       <Stack.Screen name="Login" component={LoginScreen} />
+      <Stack.Screen name="Register" component={RegisterScreen} />
+      <Stack.Screen name="ForgotPassword" component={ForgotPasswordScreen} />
     </Stack.Navigator>
   );
 }

@@ -3,18 +3,14 @@ import { Text, Pressable, Alert } from "react-native";
 import API from "../../services/api";
 import AuthLayout from "../components/AuthLayout";
 import FieldInput from "../components/FieldInput";
-import RoleSelector from "../components/RoleSelector";
 import GradientButton from "../components/GradientButton";
-import { colors, spacing, typography } from "../theme/theme";
+import { colors, typography } from "../theme/theme";
 
-export default function RegisterScreen({ navigation }) {
-  const [name, setName] = useState("");
+export default function ForgotPasswordScreen({ navigation }) {
   const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [role, setRole] = useState("farmer");
   const [loading, setLoading] = useState(false);
-  const [nameError, setNameError] = useState("");
   const [emailError, setEmailError] = useState("");
   const [passwordError, setPasswordError] = useState("");
   const [confirmPasswordError, setConfirmPasswordError] = useState("");
@@ -25,21 +21,11 @@ export default function RegisterScreen({ navigation }) {
   };
 
   const validatePassword = (password) => {
-    // At least 6 characters, 1 uppercase, 1 number
     return password.length >= 6 && /[A-Z]/.test(password) && /[0-9]/.test(password);
   };
 
-  // Original registration logic preserved exactly — only the surrounding UI changed.
-  const handleRegister = async () => {
-    // Validate inputs
+  const handleResetPassword = async () => {
     let isValid = true;
-
-    if (!name.trim()) {
-      setNameError("Name is required");
-      isValid = false;
-    } else {
-      setNameError("");
-    }
 
     if (!email) {
       setEmailError("Email is required");
@@ -51,10 +37,10 @@ export default function RegisterScreen({ navigation }) {
       setEmailError("");
     }
 
-    if (!password) {
+    if (!newPassword) {
       setPasswordError("Password is required");
       isValid = false;
-    } else if (!validatePassword(password)) {
+    } else if (!validatePassword(newPassword)) {
       setPasswordError("Password must have 6+ chars, 1 uppercase, 1 number");
       isValid = false;
     } else {
@@ -64,7 +50,7 @@ export default function RegisterScreen({ navigation }) {
     if (!confirmPassword) {
       setConfirmPasswordError("Please confirm password");
       isValid = false;
-    } else if (password !== confirmPassword) {
+    } else if (newPassword !== confirmPassword) {
       setConfirmPasswordError("Passwords do not match");
       isValid = false;
     } else {
@@ -75,18 +61,19 @@ export default function RegisterScreen({ navigation }) {
 
     setLoading(true);
     try {
-      const res = await API.post("/auth/register", {
-        name,
+      const res = await API.post("/auth/reset-password", {
         email,
-        password,
-        role,
+        newPassword,
       });
 
-      Alert.alert("Success", res.data.message || "Registration successful");
+      Alert.alert("Success", res.data.message || "Password reset successfully");
       navigation?.navigate?.("Login");
     } catch (err) {
       console.log(err.response?.data);
-      Alert.alert("Error", err.response?.data?.message || "Registration failed");
+      Alert.alert(
+        "Error",
+        err.response?.data?.message || "Could not reset password"
+      );
     } finally {
       setLoading(false);
     }
@@ -94,29 +81,18 @@ export default function RegisterScreen({ navigation }) {
 
   return (
     <AuthLayout
-      eyebrow="Welcome to AgriApp"
-      title="Create your account"
-      subtitle="Join farmers and buyers trading directly"
+      eyebrow="Reset your password"
+      title="Forgot Password"
+      subtitle="Enter your email and new password"
       footer={
         <Pressable onPress={() => navigation?.navigate?.("Login")}>
           <Text style={styles.footerText}>
-            Already have an account?{" "}
-            <Text style={styles.footerLink}>Log in</Text>
+            Remember your password?{" "}
+            <Text style={styles.footerLink}>Back to login</Text>
           </Text>
         </Pressable>
       }
     >
-      <FieldInput
-        label="Name"
-        placeholder="Your full name"
-        value={name}
-        onChangeText={(text) => {
-          setName(text);
-          setNameError("");
-        }}
-        autoCapitalize="words"
-        error={nameError}
-      />
       <FieldInput
         label="Email"
         placeholder="you@example.com"
@@ -129,11 +105,11 @@ export default function RegisterScreen({ navigation }) {
         error={emailError}
       />
       <FieldInput
-        label="Password"
+        label="New Password"
         placeholder="At least 6 characters, 1 uppercase, 1 number"
-        value={password}
+        value={newPassword}
         onChangeText={(text) => {
-          setPassword(text);
+          setNewPassword(text);
           setPasswordError("");
         }}
         secureTextEntry
@@ -151,13 +127,11 @@ export default function RegisterScreen({ navigation }) {
         error={confirmPasswordError}
       />
 
-      <RoleSelector value={role} onChange={setRole} />
-
       <GradientButton
-        title={loading ? "Creating account..." : "Create account"}
-        onPress={handleRegister}
+        title={loading ? "Resetting..." : "Reset Password"}
+        onPress={handleResetPassword}
         loading={loading}
-        disabled={!name || !email || !password || !confirmPassword}
+        disabled={!email || !newPassword || !confirmPassword}
       />
     </AuthLayout>
   );

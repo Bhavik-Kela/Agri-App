@@ -55,7 +55,11 @@ export function AuthProvider({ children }) {
   }, []);
 
   const logout = useCallback(async () => {
-    await clearSession();
+    try {
+      await clearSession();
+    } catch (err) {
+      console.log("Error clearing session:", err);
+    }
     setApiAuthToken(null);
     setToken(null);
     setUser(null);

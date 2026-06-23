@@ -11,8 +11,39 @@ export default function LoginScreen({ navigation }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [emailError, setEmailError] = useState("");
+  const [passwordError, setPasswordError] = useState("");
+
+  const validateEmail = (email) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
 
   const handleLogin = async () => {
+    // Validate inputs
+    let isValid = true;
+    if (!email) {
+      setEmailError("Email is required");
+      isValid = false;
+    } else if (!validateEmail(email)) {
+      setEmailError("Please enter a valid email");
+      isValid = false;
+    } else {
+      setEmailError("");
+    }
+
+    if (!password) {
+      setPasswordError("Password is required");
+      isValid = false;
+    } else if (password.length < 6) {
+      setPasswordError("Password must be at least 6 characters");
+      isValid = false;
+    } else {
+      setPasswordError("");
+    }
+
+    if (!isValid) return;
+
     setLoading(true);
     try {
       const res = await login(email, password);
@@ -53,16 +84,28 @@ export default function LoginScreen({ navigation }) {
         label="Email"
         placeholder="you@example.com"
         value={email}
-        onChangeText={setEmail}
+        onChangeText={(text) => {
+          setEmail(text);
+          setEmailError("");
+        }}
         keyboardType="email-address"
+        error={emailError}
       />
       <FieldInput
         label="Password"
         placeholder="Your password"
         value={password}
-        onChangeText={setPassword}
+        onChangeText={(text) => {
+          setPassword(text);
+          setPasswordError("");
+        }}
         secureTextEntry
+        error={passwordError}
       />
+
+      <Pressable onPress={() => navigation?.navigate?.("ForgotPassword")}>
+        <Text style={styles.forgotLink}>Forgot password?</Text>
+      </Pressable>
 
       <GradientButton
         title={loading ? "Logging in..." : "Log in"}
@@ -82,5 +125,12 @@ const styles = {
   footerLink: {
     color: colors.forest,
     fontWeight: "700",
+  },
+  forgotLink: {
+    color: colors.forest,
+    fontWeight: "600",
+    fontSize: 14,
+    marginBottom: 16,
+    alignSelf: "center",
   },
 };

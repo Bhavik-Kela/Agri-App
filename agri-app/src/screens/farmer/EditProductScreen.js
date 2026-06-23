@@ -22,8 +22,12 @@ export default function EditProductScreen({ route, navigation }) {
           setValues({
             name: res.data.name,
             price: String(res.data.price),
+            pricePerUnit: String(res.data.pricePerUnit || ""),
             quantity: String(res.data.quantity),
+            unit: res.data.unit || "kg",
             category: res.data.category,
+            otherProductName: res.data.otherProductName || "",
+            photo: res.data.photo || "",
           });
         }
       } catch (err) {
@@ -41,11 +45,30 @@ export default function EditProductScreen({ route, navigation }) {
   const handleSubmit = async () => {
     setSubmitting(true);
     try {
-      await API.put(`/products/${productId}`, {
-        name: values.name.trim(),
-        price: Number(values.price),
-        quantity: Number(values.quantity),
-        category: values.category,
+      const formData = new FormData();
+      formData.append("name", values.name.trim());
+      formData.append("price", Number(values.price));
+      formData.append("pricePerUnit", Number(values.pricePerUnit || 0));
+      formData.append("quantity", Number(values.quantity));
+      formData.append("unit", values.unit);
+      formData.append("category", values.category);
+      if (values.otherProductName) {
+        formData.append("otherProductName", values.otherProductName);
+      }
+      if (values.photo && !values.photo.startsWith("http")) {
+        const uriParts = values.photo.split(".");
+        const fileType = uriParts[uriParts.length - 1];
+        formData.append("photo", {
+          uri: values.photo,
+          name: `photo.${fileType}`,
+          type: `image/${fileType}`,
+        });
+      }
+
+      await API.put(`/products/${productId}`, formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
       });
 
       Alert.alert("Success", "Product updated successfully");

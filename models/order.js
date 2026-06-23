@@ -39,7 +39,21 @@ const orderSchema = new mongoose.Schema(
         "completed"
       ],
       default: "pending"
-    }
+    },
+
+    deliveryAddress: {
+      street: String,
+      city: String,
+      state: String,
+      zipCode: String
+    },
+
+    chatActive: {
+      type: Boolean,
+      default: false
+    },
+
+    rejectionReason: String
   },
   {
     timestamps: true

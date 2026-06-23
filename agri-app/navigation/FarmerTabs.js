@@ -7,8 +7,10 @@ import FarmerHomeScreen from "../src/screens/farmer/FarmerHomeScreen";
 import AddProductScreen from "../src/screens/farmer/AddProductScreen";
 import MyProductsScreen from "../src/screens/farmer/MyProductsScreen";
 import EditProductScreen from "../src/screens/farmer/EditProductScreen";
+import FarmerOrdersScreen from "../src/screens/farmer/FarmerOrdersScreen";
 import ProductDetailScreen from "../src/screens/ProductDetailScreen";
-import HomeScreen from "../src/screens/HomeScreen";
+import ChatScreen from "../src/screens/ChatScreen";
+import ProfileScreen from "../src/screens/ProfileScreen";
 import { colors } from "../src/theme/theme";
 
 // Each tab gets its OWN stack with the SAME inner route names
@@ -58,12 +60,23 @@ function MyProductsStackScreen() {
   );
 }
 
+const OrdersStack = createNativeStackNavigator();
+function OrdersStackScreen() {
+  return (
+    <OrdersStack.Navigator screenOptions={{ headerShown: false }}>
+      <OrdersStack.Screen name="Orders" component={FarmerOrdersScreen} />
+      <OrdersStack.Screen name="Chat" component={ChatScreen} />
+    </OrdersStack.Navigator>
+  );
+}
+
 const Tab = createBottomTabNavigator();
 
 const TAB_ICONS = {
   HomeTab: "🏠",
   AddProductTab: "➕",
   MyProductsTab: "📦",
+  OrdersTab: "🧾",
   ProfileTab: "👤",
 };
 
@@ -95,8 +108,13 @@ export default function FarmerTabs() {
         options={{ tabBarLabel: "My Products" }}
       />
       <Tab.Screen
+        name="OrdersTab"
+        component={OrdersStackScreen}
+        options={{ tabBarLabel: "Orders" }}
+      />
+      <Tab.Screen
         name="ProfileTab"
-        component={HomeScreen}
+        component={ProfileScreen}
         options={{ tabBarLabel: "Profile" }}
       />
     </Tab.Navigator>
