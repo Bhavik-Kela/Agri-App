@@ -3,7 +3,7 @@ import { View, Text, Pressable, StyleSheet, ScrollView } from "react-native";
 import * as ImagePicker from 'expo-image-picker';
 import FieldInput from "./FieldInput";
 import GradientButton from "./GradientButton";
-import { colors, radius, spacing, typography } from "../theme/theme";
+import { mono, radius, spacing, colors } from "../theme/theme";
 
 const CATEGORIES = ["Vegetable", "Fruit", "Grain", "Dairy", "Other"];
 const UNITS = ["kg", "g", "liter", "ml", "piece", "dozen"];
@@ -50,10 +50,10 @@ export default function ProductForm({
 
         <Pressable
           onPress={handlePickImage}
-          style={styles.uploadButton}
+          style={({ pressed }) => [styles.uploadButton, pressed && styles.uploadButtonPressed]}
         >
           <Text style={styles.uploadButtonText}>
-            {values.photo ? "📸 Change Photo" : "📸 Add Product Photo"}
+            {values.photo ? "Change photo" : "Add product photo"}
           </Text>
         </Pressable>
 
@@ -97,7 +97,7 @@ export default function ProductForm({
             />
           </View>
           <View style={styles.half}>
-            <Text style={typography.label}>Unit</Text>
+            <Text style={styles.fieldLabel}>Unit</Text>
             <View style={styles.unitRow}>
               {UNITS.map((unit) => {
                 const selected = values.unit === unit;
@@ -123,7 +123,7 @@ export default function ProductForm({
         </View>
 
         <View style={styles.categoryBlock}>
-          <Text style={typography.label}>Category</Text>
+          <Text style={styles.fieldLabel}>Category</Text>
           <View style={styles.categoryRow}>
             {CATEGORIES.map((cat) => {
               const selected = values.category === cat;
@@ -170,8 +170,15 @@ export default function ProductForm({
 }
 
 const styles = StyleSheet.create({
+  fieldLabel: {
+    fontSize: 11,
+    fontWeight: "700",
+    letterSpacing: 1,
+    textTransform: "uppercase",
+    color: colors.inkSoft,
+  },
   photoPreview: {
-    backgroundColor: colors.leafLight,
+    backgroundColor: colors.chipBg,
     padding: spacing.md,
     borderRadius: radius.md,
     marginBottom: spacing.md,
@@ -179,23 +186,26 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   photoLabel: {
-    color: colors.forest,
-    fontWeight: "600",
+    color: colors.ink,
+    fontWeight: "700",
     fontSize: 14,
   },
   uploadButton: {
-    backgroundColor: colors.card,
-    borderWidth: 2,
-    borderColor: colors.leaf,
+    backgroundColor: colors.surface,
+    borderWidth: 1.5,
+    borderColor: colors.ink,
     borderRadius: radius.md,
     padding: spacing.lg,
     alignItems: "center",
     marginBottom: spacing.md,
   },
+  uploadButtonPressed: {
+    backgroundColor: colors.chipBg,
+  },
   uploadButtonText: {
-    color: colors.forest,
+    color: colors.ink,
     fontWeight: "700",
-    fontSize: 16,
+    fontSize: 15,
   },
   row: {
     flexDirection: "row",
@@ -216,20 +226,20 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.sm,
     borderRadius: radius.pill,
     borderWidth: 1.5,
-    borderColor: colors.border,
-    backgroundColor: colors.card,
+    borderColor: colors.hairline,
+    backgroundColor: colors.surface,
   },
   unitChipSelected: {
-    backgroundColor: colors.leaf,
-    borderColor: colors.leaf,
+    backgroundColor: colors.ink,
+    borderColor: colors.ink,
   },
   unitChipText: {
     fontSize: 12,
     fontWeight: "600",
-    color: colors.textSecondary,
+    color: colors.inkSoft,
   },
   unitChipTextSelected: {
-    color: colors.textOnDark,
+    color: colors.surface,
   },
   categoryBlock: {
     marginBottom: spacing.md,
@@ -245,20 +255,20 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.md,
     borderRadius: radius.pill,
     borderWidth: 1.5,
-    borderColor: colors.border,
-    backgroundColor: colors.card,
+    borderColor: colors.hairline,
+    backgroundColor: colors.surface,
   },
   chipSelected: {
-    backgroundColor: colors.leaf,
-    borderColor: colors.leaf,
+    backgroundColor: colors.ink,
+    borderColor: colors.ink,
   },
   chipText: {
     fontSize: 13,
     fontWeight: "600",
-    color: colors.textSecondary,
+    color: colors.inkSoft,
   },
   chipTextSelected: {
-    color: colors.textOnDark,
+    color: colors.surface,
   },
   submit: {
     marginTop: spacing.lg,

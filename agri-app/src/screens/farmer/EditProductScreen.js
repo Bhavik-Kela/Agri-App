@@ -37,9 +37,7 @@ export default function EditProductScreen({ route, navigation }) {
         if (active) setLoading(false);
       }
     })();
-    return () => {
-      active = false;
-    };
+    return () => { active = false; };
   }, [productId]);
 
   const handleSubmit = async () => {
@@ -56,7 +54,10 @@ export default function EditProductScreen({ route, navigation }) {
       if (values.otherProductName) {
         formData.append("otherProductName", values.otherProductName);
       }
-      if (values.photo && (values.photo.startsWith("file://") || values.photo.startsWith("content://"))) {
+      if (
+        values.photo &&
+        (values.photo.startsWith("file://") || values.photo.startsWith("content://"))
+      ) {
         const uriParts = values.photo.split(".");
         const fileType = uriParts[uriParts.length - 1];
         formData.append("photo", {
@@ -67,21 +68,16 @@ export default function EditProductScreen({ route, navigation }) {
       }
 
       await API.put(`/products/${productId}`, formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
+        headers: { "Content-Type": "multipart/form-data" },
       });
 
       Alert.alert("Success", "Product updated successfully");
       navigation.navigate("ProductDetail", { productId });
-   } catch (err) {
+    } catch (err) {
       console.log("FULL ERROR:", err.message);
       console.log("STATUS:", err.response?.status);
       console.log("DATA:", JSON.stringify(err.response?.data));
-      Alert.alert(
-        "Error",
-        err.response?.data?.message || "Could not update product"
-      );
+      Alert.alert("Error", err.response?.data?.message || "Could not update product");
     } finally {
       setSubmitting(false);
     }
@@ -94,7 +90,11 @@ export default function EditProductScreen({ route, navigation }) {
   return (
     <SafeAreaView style={styles.safeArea} edges={["top", "bottom"]}>
       <ScreenHeader eyebrow="Update listing" title="Edit Product" />
-      <ScrollView contentContainerStyle={styles.content}>
+      <ScrollView
+        contentContainerStyle={styles.content}
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
+      >
         <ProductForm
           values={values}
           onChange={setValues}
@@ -110,9 +110,10 @@ export default function EditProductScreen({ route, navigation }) {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: colors.cream,
+    backgroundColor: colors.bg,
   },
   content: {
     padding: spacing.lg,
+    paddingBottom: spacing.xxl,
   },
 });

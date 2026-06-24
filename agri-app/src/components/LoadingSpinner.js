@@ -1,11 +1,12 @@
 import React from "react";
 import { View, Text, ActivityIndicator, StyleSheet } from "react-native";
-import { colors, spacing, typography } from "../theme/theme";
+import { mono, spacing } from "../theme/theme";
+import { colors } from "../theme/theme";
 
 export default function LoadingSpinner({ label = "Loading...", fullscreen = true }) {
   return (
     <View style={[styles.container, fullscreen && styles.fullscreen]}>
-      <ActivityIndicator size="large" color={colors.forest} />
+      <ActivityIndicator size="large" color={colors.ink} />
       {label ? <Text style={styles.label}>{label}</Text> : null}
     </View>
   );
@@ -19,10 +20,12 @@ const styles = StyleSheet.create({
   },
   fullscreen: {
     flex: 1,
-    backgroundColor: colors.cream,
+    backgroundColor: colors.surfaceSunken,
   },
   label: {
-    ...typography.body,
+    fontSize: 14,
+    fontWeight: "500",
+    color: colors.inkSoft,
     marginTop: spacing.sm,
   },
 });

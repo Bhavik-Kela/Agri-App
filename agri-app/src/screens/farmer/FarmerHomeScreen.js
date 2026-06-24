@@ -1,5 +1,5 @@
 import React, { useCallback, useState } from "react";
-import { View, Text, ScrollView, StyleSheet, RefreshControl } from "react-native";
+import { View, Text, ScrollView, StyleSheet, RefreshControl, Pressable } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useFocusEffect } from "@react-navigation/native";
 import API from "../../../services/api";
@@ -37,9 +37,7 @@ export default function FarmerHomeScreen({ navigation }) {
         await fetchMyProducts();
         if (active) setLoading(false);
       })();
-      return () => {
-        active = false;
-      };
+      return () => { active = false; };
     }, [fetchMyProducts])
   );
 
@@ -49,45 +47,67 @@ export default function FarmerHomeScreen({ navigation }) {
     setRefreshing(false);
   };
 
-  if (loading) {
-    return <LoadingSpinner label="Loading your farm..." />;
-  }
+  if (loading) return <LoadingSpinner label="Loading your farm..." />;
 
   const recent = products.slice(0, 5);
+  const firstName = user?.name?.split(" ")[0] || "Farmer";
 
   return (
     <SafeAreaView style={styles.safeArea} edges={["top", "bottom"]}>
-      <ScreenHeader
-        eyebrow="Welcome back"
-        title={`Welcome, ${user?.name?.split(" ")[0] || "Farmer"}`}
-        subtitle={`${products.length} product${products.length === 1 ? "" : "s"} listed`}
-      />
+      {/* Custom header — richer than ScreenHeader for the home screen */}
+      <View style={styles.header}>
+        <View>
+          <Text style={styles.eyebrow}>Good day</Text>
+          <Text style={styles.headerTitle}>{firstName}</Text>
+        </View>
+        <View style={styles.statBadge}>
+          <Text style={styles.statNumber}>{products.length}</Text>
+          <Text style={styles.statUnit}>listings</Text>
+        </View>
+      </View>
 
       <ScrollView
         contentContainerStyle={styles.content}
+        showsVerticalScrollIndicator={false}
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor={colors.textTertiary}
+          />
         }
       >
+        {/* Quick actions */}
         <View style={styles.quickActions}>
-          <GradientButton
-            title="Add Product"
+          <Pressable
+            style={styles.primaryAction}
             onPress={() => navigation.navigate("AddProduct")}
-            style={styles.actionButton}
-          />
-          <GradientButton
-            title="View My Products"
+          >
+            <Text style={styles.primaryActionIcon}>+</Text>
+            <Text style={styles.primaryActionText}>Add Product</Text>
+          </Pressable>
+          <Pressable
+            style={styles.secondaryAction}
             onPress={() => navigation.navigate("MyProducts")}
-            variant="accent"
-            style={styles.actionButton}
-          />
+          >
+            <Text style={styles.secondaryActionIcon}>≡</Text>
+            <Text style={styles.secondaryActionText}>My Listings</Text>
+          </Pressable>
         </View>
 
-        <Text style={styles.sectionTitle}>Recent Products</Text>
+        {/* Section header */}
+        <View style={styles.sectionHeader}>
+          <Text style={styles.sectionTitle}>Recent Products</Text>
+          {recent.length > 0 && (
+            <Pressable onPress={() => navigation.navigate("MyProducts")}>
+              <Text style={styles.seeAll}>See all →</Text>
+            </Pressable>
+          )}
+        </View>
 
         {recent.length === 0 ? (
           <EmptyState
-            icon="🌱"
+            icon="◌"
             title="No products yet"
             subtitle="List your first harvest so buyers can find it."
             actionLabel="Add Product"
@@ -112,20 +132,123 @@ export default function FarmerHomeScreen({ navigation }) {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: colors.cream,
+    backgroundColor: colors.bg,
   },
+
+  // Header
+  header: {
+    flexDirection: "row",
+    alignItems: "flex-end",
+    justifyContent: "space-between",
+    paddingHorizontal: spacing.lg,
+    paddingTop: spacing.lg,
+    paddingBottom: spacing.lg,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
+  },
+  eyebrow: {
+    ...typography.label,
+    color: colors.textTertiary,
+    marginBottom: 4,
+  },
+  headerTitle: {
+    fontSize: 26,
+    fontWeight: "700",
+    color: colors.textPrimary,
+    letterSpacing: -0.8,
+  },
+  statBadge: {
+    alignItems: "flex-end",
+    backgroundColor: colors.surface,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+    borderRadius: radius.md,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  statNumber: {
+    fontSize: 20,
+    fontWeight: "700",
+    color: colors.textPrimary,
+    letterSpacing: -0.5,
+  },
+  statUnit: {
+    fontSize: 10,
+    fontWeight: "600",
+    color: colors.textTertiary,
+    textTransform: "uppercase",
+    letterSpacing: 0.5,
+  },
+
   content: {
     padding: spacing.lg,
+    paddingBottom: spacing.xxl,
   },
+
+  // Quick actions
   quickActions: {
-    gap: spacing.md,
+    flexDirection: "row",
+    gap: spacing.sm,
     marginBottom: spacing.xl,
   },
-  actionButton: {
-    width: "100%",
+  primaryAction: {
+    flex: 1,
+    backgroundColor: colors.white,
+    borderRadius: radius.lg,
+    paddingVertical: spacing.lg,
+    alignItems: "center",
+    gap: spacing.xs,
+  },
+  primaryActionIcon: {
+    fontSize: 24,
+    fontWeight: "300",
+    color: colors.black,
+    lineHeight: 28,
+  },
+  primaryActionText: {
+    fontSize: 13,
+    fontWeight: "700",
+    color: colors.black,
+    letterSpacing: -0.2,
+  },
+  secondaryAction: {
+    flex: 1,
+    backgroundColor: colors.surface,
+    borderRadius: radius.lg,
+    paddingVertical: spacing.lg,
+    alignItems: "center",
+    gap: spacing.xs,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  secondaryActionIcon: {
+    fontSize: 22,
+    color: colors.textSecondary,
+    lineHeight: 28,
+  },
+  secondaryActionText: {
+    fontSize: 13,
+    fontWeight: "700",
+    color: colors.textSecondary,
+    letterSpacing: -0.2,
+  },
+
+  // Section header
+  sectionHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: spacing.md,
   },
   sectionTitle: {
-    ...typography.title,
-    marginBottom: spacing.md,
+    fontSize: 16,
+    fontWeight: "700",
+    color: colors.textPrimary,
+    letterSpacing: -0.3,
+  },
+  seeAll: {
+    fontSize: 13,
+    fontWeight: "500",
+    color: colors.textTertiary,
   },
 });

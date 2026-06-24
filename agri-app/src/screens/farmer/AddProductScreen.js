@@ -32,9 +32,8 @@ export default function AddProductScreen({ navigation }) {
       if (values.otherProductName) {
         formData.append("otherProductName", values.otherProductName);
       }
-      
       if (values.photo) {
-        const uriParts = values.photo.split('.');
+        const uriParts = values.photo.split(".");
         const fileType = uriParts[uriParts.length - 1];
         formData.append("photo", {
           uri: values.photo,
@@ -44,9 +43,7 @@ export default function AddProductScreen({ navigation }) {
       }
 
       await API.post("/products", formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
+        headers: { "Content-Type": "multipart/form-data" },
       });
 
       Alert.alert("Success", "Product added successfully");
@@ -62,7 +59,11 @@ export default function AddProductScreen({ navigation }) {
   return (
     <SafeAreaView style={styles.safeArea} edges={["top", "bottom"]}>
       <ScreenHeader eyebrow="New listing" title="Add Product" />
-      <ScrollView contentContainerStyle={styles.content}>
+      <ScrollView
+        contentContainerStyle={styles.content}
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
+      >
         <ProductForm
           values={values}
           onChange={setValues}
@@ -78,9 +79,10 @@ export default function AddProductScreen({ navigation }) {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: colors.cream,
+    backgroundColor: colors.bg,
   },
   content: {
     padding: spacing.lg,
+    paddingBottom: spacing.xxl,
   },
 });

@@ -1,7 +1,7 @@
 import React from "react";
 import { View, Text, StyleSheet } from "react-native";
 import GradientButton from "./GradientButton";
-import { spacing, typography } from "../theme/theme";
+import { mono, spacing, colors } from "../theme/theme";
 
 export default function EmptyState({
   icon = "🌱",
@@ -12,7 +12,9 @@ export default function EmptyState({
 }) {
   return (
     <View style={styles.container}>
-      <Text style={styles.icon}>{icon}</Text>
+      <View style={styles.iconWrap}>
+        <Text style={styles.icon}>{icon}</Text>
+      </View>
       <Text style={styles.title}>{title}</Text>
       {subtitle ? <Text style={styles.subtitle}>{subtitle}</Text> : null}
       {actionLabel && onAction ? (
@@ -33,18 +35,30 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.xxl,
     paddingHorizontal: spacing.lg,
   },
-  icon: {
-    fontSize: 48,
+  iconWrap: {
+    width: 72,
+    height: 72,
+    borderRadius: 24,
+    backgroundColor: colors.chipBg,
+    alignItems: "center",
+    justifyContent: "center",
     marginBottom: spacing.md,
   },
+  icon: {
+    fontSize: 32,
+  },
   title: {
-    ...typography.title,
+    fontSize: 17,
+    fontWeight: "700",
+    color: colors.ink,
     textAlign: "center",
   },
   subtitle: {
-    ...typography.body,
+    fontSize: 14,
+    color: colors.inkSoft,
     textAlign: "center",
     marginTop: spacing.xs,
+    lineHeight: 20,
   },
   action: {
     marginTop: spacing.lg,

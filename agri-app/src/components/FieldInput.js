@@ -19,13 +19,13 @@ export default function FieldInput({
 
   return (
     <View style={styles.container}>
-      <Text style={typography.label}>{label}</Text>
+      {label ? <Text style={styles.label}>{label}</Text> : null}
       <View style={styles.inputWrapper}>
         <TextInput
           value={value}
           onChangeText={onChangeText}
           placeholder={placeholder}
-          placeholderTextColor={colors.textSecondary}
+          placeholderTextColor={colors.textTertiary}
           secureTextEntry={isPassword && !showPassword}
           keyboardType={keyboardType}
           autoCapitalize={autoCapitalize}
@@ -35,6 +35,7 @@ export default function FieldInput({
             styles.input,
             focused && styles.inputFocused,
             error && styles.inputError,
+            isPassword && styles.inputWithToggle,
           ]}
         />
         {isPassword && (
@@ -43,7 +44,7 @@ export default function FieldInput({
             onPress={() => setShowPassword(!showPassword)}
           >
             <Text style={styles.eyeIcon}>
-              {showPassword ? "👁" : "👁‍🗨"}
+              {showPassword ? "◉" : "◎"}
             </Text>
           </Pressable>
         )}
@@ -57,23 +58,30 @@ const styles = StyleSheet.create({
   container: {
     marginBottom: spacing.md,
   },
+  label: {
+    ...typography.label,
+    color: colors.textTertiary,
+    marginBottom: spacing.sm,
+  },
   inputWrapper: {
     position: "relative",
-    marginTop: spacing.xs,
   },
   input: {
-    backgroundColor: colors.card,
+    backgroundColor: colors.surfaceSunken,
     borderRadius: radius.md,
-    borderWidth: 1.5,
+    borderWidth: 1,
     borderColor: colors.border,
     paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm + 4,
-    fontSize: 16,
+    paddingVertical: 14,
+    fontSize: 15,
     color: colors.textPrimary,
+  },
+  inputWithToggle: {
     paddingRight: 48,
   },
   inputFocused: {
-    borderColor: colors.leaf,
+    borderColor: colors.borderStrong,
+    backgroundColor: colors.surface,
   },
   inputError: {
     borderColor: colors.error,
@@ -84,14 +92,16 @@ const styles = StyleSheet.create({
     top: 0,
     height: "100%",
     justifyContent: "center",
-    paddingHorizontal: spacing.sm,
+    paddingHorizontal: 4,
   },
   eyeIcon: {
-    fontSize: 18,
+    fontSize: 16,
+    color: colors.textTertiary,
   },
   errorText: {
     marginTop: spacing.xs,
     color: colors.error,
     fontSize: 12,
+    fontWeight: "500",
   },
 });

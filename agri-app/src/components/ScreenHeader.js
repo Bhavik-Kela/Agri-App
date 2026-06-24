@@ -1,16 +1,11 @@
 import React from "react";
 import { View, Text, StyleSheet } from "react-native";
-import { LinearGradient } from "expo-linear-gradient";
-import { colors, gradients, spacing, typography } from "../theme/theme";
+import { mono, spacing } from "../theme/theme";
+import { colors } from "../theme/theme";
 
 export default function ScreenHeader({ eyebrow, title, subtitle, right }) {
   return (
-    <LinearGradient
-      colors={gradients.primary}
-      start={{ x: 0, y: 0 }}
-      end={{ x: 1, y: 1 }}
-      style={styles.header}
-    >
+    <View style={styles.header}>
       <View style={styles.row}>
         <View style={styles.textBlock}>
           {eyebrow ? <Text style={styles.eyebrow}>{eyebrow}</Text> : null}
@@ -19,17 +14,16 @@ export default function ScreenHeader({ eyebrow, title, subtitle, right }) {
         </View>
         {right ? <View>{right}</View> : null}
       </View>
-    </LinearGradient>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   header: {
-    paddingTop: spacing.lg,
-    paddingBottom: spacing.xl,
+    paddingTop: spacing.sm,
+    paddingBottom: spacing.md,
     paddingHorizontal: spacing.lg,
-    borderBottomLeftRadius: 32,
-    borderBottomRightRadius: 32,
+    backgroundColor: colors.surfaceSunken,
   },
   row: {
     flexDirection: "row",
@@ -40,18 +34,21 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   eyebrow: {
-    ...typography.label,
-    color: colors.leafLight,
-    marginBottom: spacing.xs,
+    fontSize: 11,
+    fontWeight: "800",
+    letterSpacing: 1.6,
+    color: colors.inkSoft,
+    marginBottom: 4,
   },
   title: {
-    ...typography.display,
-    fontSize: 26,
-    color: colors.textOnDark,
+    fontSize: 28,
+    fontWeight: "800",
+    letterSpacing: -0.5,
+    color: colors.ink,
   },
   subtitle: {
-    ...typography.body,
-    color: colors.leafLight,
+    fontSize: 14,
+    color: colors.inkSoft,
     marginTop: spacing.xs,
   },
 });

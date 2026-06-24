@@ -1,18 +1,21 @@
 import React from "react";
 import { Pressable, Text, StyleSheet, ActivityIndicator } from "react-native";
-import { LinearGradient } from "expo-linear-gradient";
-import { colors, gradients, radius, spacing, typography } from "../theme/theme";
+import { mono, colors, radius, spacing } from "../theme/theme";
 
+// Redesigned: gradients replaced with solid monochrome fills. The "accent"
+// variant keeps a touch of warmth (deep ink with the original amber as a
+// thin top accent would be inconsistent with the mono system, so accent is
+// now a bordered "outline" button — still clearly a secondary action, no
+// green/amber anywhere).
 export default function GradientButton({
   title,
   onPress,
   loading = false,
-  variant = "primary", // "primary" (forest->leaf) | "accent" (amber)
+  variant = "primary", // "primary" (solid ink) | "accent" (outline)
   disabled = false,
   style,
 }) {
-  const colorsForVariant =
-    variant === "accent" ? gradients.accent : gradients.primary;
+  const isAccent = variant === "accent";
 
   return (
     <Pressable
@@ -20,23 +23,17 @@ export default function GradientButton({
       disabled={disabled || loading}
       style={({ pressed }) => [
         styles.wrapper,
+        isAccent ? styles.wrapperAccent : styles.wrapperPrimary,
         style,
         pressed && !disabled && styles.pressed,
         disabled && styles.disabled,
       ]}
     >
-      <LinearGradient
-        colors={colorsForVariant}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
-        style={styles.gradient}
-      >
-        {loading ? (
-          <ActivityIndicator color={colors.cream} />
-        ) : (
-          <Text style={typography.button}>{title}</Text>
-        )}
-      </LinearGradient>
+      {loading ? (
+        <ActivityIndicator color={isAccent ? colors.ink : colors.surface} />
+      ) : (
+        <Text style={isAccent ? styles.textAccent : styles.textPrimary}>{title}</Text>
+      )}
     </Pressable>
   );
 }
@@ -44,18 +41,22 @@ export default function GradientButton({
 const styles = StyleSheet.create({
   wrapper: {
     borderRadius: radius.pill,
-    overflow: "hidden",
-    shadowColor: colors.forestDark,
+    paddingVertical: spacing.md,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  wrapperPrimary: {
+    backgroundColor: colors.ink,
+    shadowColor: colors.ink,
     shadowOffset: { width: 0, height: 6 },
     shadowOpacity: 0.18,
     shadowRadius: 10,
     elevation: 4,
   },
-  gradient: {
-    paddingVertical: spacing.md,
-    alignItems: "center",
-    justifyContent: "center",
-    borderRadius: radius.pill,
+  wrapperAccent: {
+    backgroundColor: colors.surface,
+    borderWidth: 1.5,
+    borderColor: colors.ink,
   },
   pressed: {
     opacity: 0.85,
@@ -63,5 +64,17 @@ const styles = StyleSheet.create({
   },
   disabled: {
     opacity: 0.5,
+  },
+  textPrimary: {
+    fontSize: 16,
+    fontWeight: "700",
+    color: colors.surface,
+    letterSpacing: 0.3,
+  },
+  textAccent: {
+    fontSize: 16,
+    fontWeight: "700",
+    color: colors.ink,
+    letterSpacing: 0.3,
   },
 });

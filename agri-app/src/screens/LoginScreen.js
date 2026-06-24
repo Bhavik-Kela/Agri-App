@@ -20,7 +20,6 @@ export default function LoginScreen({ navigation }) {
   };
 
   const handleLogin = async () => {
-    // Validate inputs
     let isValid = true;
     if (!email) {
       setEmailError("Email is required");
@@ -47,20 +46,10 @@ export default function LoginScreen({ navigation }) {
     setLoading(true);
     try {
       const res = await login(email, password);
-
-      Alert.alert(
-        "Welcome back",
-        res?.message || "Logged in successfully"
-      );
+      Alert.alert("Welcome back", res?.message || "Logged in successfully");
     } catch (err) {
       console.log("ERROR:", err);
-      console.log("MESSAGE:", err?.message);
-      console.log("RESPONSE:", err?.response?.data);
-
-      Alert.alert(
-        "Error",
-        err?.response?.data?.message || err?.message || "Login failed"
-      );
+      Alert.alert("Error", err?.response?.data?.message || err?.message || "Login failed");
     } finally {
       setLoading(false);
     }
@@ -84,10 +73,7 @@ export default function LoginScreen({ navigation }) {
         label="Email"
         placeholder="you@example.com"
         value={email}
-        onChangeText={(text) => {
-          setEmail(text);
-          setEmailError("");
-        }}
+        onChangeText={(text) => { setEmail(text); setEmailError(""); }}
         keyboardType="email-address"
         error={emailError}
       />
@@ -95,10 +81,7 @@ export default function LoginScreen({ navigation }) {
         label="Password"
         placeholder="Your password"
         value={password}
-        onChangeText={(text) => {
-          setPassword(text);
-          setPasswordError("");
-        }}
+        onChangeText={(text) => { setPassword(text); setPasswordError(""); }}
         secureTextEntry
         error={passwordError}
       />
@@ -108,7 +91,7 @@ export default function LoginScreen({ navigation }) {
       </Pressable>
 
       <GradientButton
-        title={loading ? "Logging in..." : "Log in"}
+        title={loading ? "Logging in…" : "Log in"}
         onPress={handleLogin}
         loading={loading}
         disabled={!email || !password}
@@ -120,16 +103,18 @@ export default function LoginScreen({ navigation }) {
 const styles = {
   footerText: {
     ...typography.body,
-    fontSize: 14,
+    fontSize: 13,
+    color: colors.textTertiary,
+    textAlign: "center",
   },
   footerLink: {
-    color: colors.forest,
+    color: colors.textPrimary,
     fontWeight: "700",
   },
   forgotLink: {
-    color: colors.forest,
-    fontWeight: "600",
-    fontSize: 14,
+    color: colors.textTertiary,
+    fontWeight: "500",
+    fontSize: 13,
     marginBottom: 16,
     alignSelf: "center",
   },

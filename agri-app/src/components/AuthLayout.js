@@ -1,8 +1,8 @@
 import React from "react";
 import { View, Text, ScrollView, StyleSheet, KeyboardAvoidingView, Platform } from "react-native";
-import { LinearGradient } from "expo-linear-gradient";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { colors, gradients, radius, spacing, typography } from "../theme/theme";
+import { mono, radius, spacing } from "../theme/theme";
+import { colors } from "../theme/theme";
 
 export default function AuthLayout({ eyebrow, title, subtitle, children, footer }) {
   return (
@@ -11,30 +11,18 @@ export default function AuthLayout({ eyebrow, title, subtitle, children, footer 
         style={styles.flex}
         behavior={Platform.OS === "ios" ? "padding" : undefined}
       >
-        <LinearGradient
-          colors={gradients.primary}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-          style={styles.header}
-        >
+        <View style={styles.header}>
           <Text style={styles.eyebrow}>{eyebrow}</Text>
           <Text style={styles.headerTitle}>{title}</Text>
           {subtitle ? <Text style={styles.headerSubtitle}>{subtitle}</Text> : null}
-        </LinearGradient>
+        </View>
 
         <ScrollView
           style={styles.flex}
           contentContainerStyle={styles.scrollContent}
           keyboardShouldPersistTaps="handled"
         >
-          <LinearGradient
-            colors={gradients.sunrise}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 0.6, y: 1 }}
-            style={styles.cardGlow}
-          >
-            <View style={styles.card}>{children}</View>
-          </LinearGradient>
+          <View style={styles.card}>{children}</View>
 
           {footer ? <View style={styles.footer}>{footer}</View> : null}
         </ScrollView>
@@ -46,50 +34,49 @@ export default function AuthLayout({ eyebrow, title, subtitle, children, footer 
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: colors.cream,
+    backgroundColor: colors.surfaceSunken,
   },
   flex: {
     flex: 1,
   },
   header: {
     paddingTop: spacing.lg,
-    paddingBottom: spacing.xxl + spacing.lg,
+    paddingBottom: spacing.xl,
     paddingHorizontal: spacing.lg,
-    borderBottomLeftRadius: 40,
-    borderBottomRightRadius: 40,
   },
   eyebrow: {
-    ...typography.label,
-    color: colors.leafLight,
+    fontSize: 11,
+    fontWeight: "800",
+    letterSpacing: 1.6,
+    color: colors.inkSoft,
     marginBottom: spacing.xs,
   },
   headerTitle: {
-    ...typography.display,
-    color: colors.textOnDark,
+    fontSize: 32,
+    fontWeight: "800",
+    letterSpacing: -0.6,
+    color: colors.ink,
   },
   headerSubtitle: {
-    ...typography.body,
-    color: colors.leafLight,
+    fontSize: 14,
+    color: colors.inkSoft,
     marginTop: spacing.xs,
   },
   scrollContent: {
     paddingHorizontal: spacing.lg,
     paddingBottom: spacing.xl,
   },
-  cardGlow: {
-    marginTop: spacing.lg,
-    borderRadius: radius.lg,
-    padding: spacing.xs,
-  },
   card: {
-    backgroundColor: colors.card,
+    backgroundColor: colors.surface,
     borderRadius: radius.lg,
     padding: spacing.lg,
-    shadowColor: colors.forestDark,
+    borderWidth: 1,
+    borderColor: colors.hairline,
+    shadowColor: colors.ink,
     shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.08,
+    shadowOpacity: 0.05,
     shadowRadius: 16,
-    elevation: 3,
+    elevation: 2,
   },
   footer: {
     marginTop: spacing.lg,

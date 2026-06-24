@@ -15,8 +15,9 @@ import ScreenHeader from "../components/ScreenHeader";
 import FieldInput from "../components/FieldInput";
 import GradientButton from "../components/GradientButton";
 import LoadingSpinner from "../components/LoadingSpinner";
-import { colors, spacing, radius, typography } from "../theme/theme";
+import { mono, spacing, radius } from "../theme/theme";
 import { useAuth } from "../context/AuthContext";
+import { colors } from "../theme/theme";
 
 export default function ProfileScreen({ navigation }) {
   const { user, logout, updateUser } = useAuth();
@@ -362,7 +363,7 @@ export default function ProfileScreen({ navigation }) {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: colors.cream,
+    backgroundColor: colors.surfaceSunken,
   },
   content: {
     padding: spacing.lg,
@@ -370,11 +371,11 @@ const styles = StyleSheet.create({
   },
   section: {
     marginBottom: spacing.xl,
-    backgroundColor: colors.card,
+    backgroundColor: colors.surface,
     borderRadius: radius.lg,
     padding: spacing.lg,
     borderWidth: 1,
-    borderColor: colors.border,
+    borderColor: colors.hairline,
   },
   sectionHeader: {
     flexDirection: "row",
@@ -383,18 +384,19 @@ const styles = StyleSheet.create({
     marginBottom: spacing.md,
   },
   sectionTitle: {
-    ...typography.title,
     fontSize: 18,
+    fontWeight: "700",
+    color: colors.ink,
     marginBottom: spacing.md,
   },
   addButton: {
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.sm,
-    backgroundColor: colors.leaf,
+    backgroundColor: colors.ink,
     borderRadius: radius.md,
   },
   addButtonText: {
-    color: colors.textOnDark,
+    color: colors.surface,
     fontWeight: "700",
     fontSize: 12,
   },
@@ -404,27 +406,30 @@ const styles = StyleSheet.create({
     marginBottom: spacing.md,
     paddingBottom: spacing.md,
     borderBottomWidth: 1,
-    borderBottomColor: colors.border,
+    borderBottomColor: colors.hairline,
   },
   label: {
-    ...typography.label,
-    color: colors.textSecondary,
+    fontSize: 11,
+    fontWeight: "700",
+    letterSpacing: 1,
+    textTransform: "uppercase",
+    color: colors.inkSoft,
   },
   value: {
-    ...typography.body,
-    color: colors.textPrimary,
+    fontSize: 15,
+    color: colors.ink,
     fontWeight: "600",
     textAlign: "right",
     flex: 1,
     marginLeft: spacing.md,
   },
   addressCard: {
-    backgroundColor: colors.cream,
+    backgroundColor: colors.surfaceSunken,
     borderRadius: radius.md,
     padding: spacing.md,
     marginBottom: spacing.md,
     borderWidth: 1,
-    borderColor: colors.border,
+    borderColor: colors.hairline,
   },
   addressHeader: {
     flexDirection: "row",
@@ -438,17 +443,20 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
   },
   addressLabel: {
-    ...typography.label,
-    fontWeight: "700",
+    fontSize: 12,
+    fontWeight: "800",
+    color: colors.ink,
+    textTransform: "uppercase",
+    letterSpacing: 0.6,
   },
   defaultBadge: {
-    backgroundColor: colors.leaf,
+    backgroundColor: colors.ink,
     paddingHorizontal: spacing.sm,
     paddingVertical: spacing.xs,
     borderRadius: radius.pill,
   },
   defaultBadgeText: {
-    color: colors.textOnDark,
+    color: colors.surface,
     fontSize: 10,
     fontWeight: "700",
   },
@@ -460,7 +468,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.sm,
   },
   actionLinkText: {
-    color: colors.forest,
+    color: colors.ink,
     fontSize: 12,
     fontWeight: "600",
   },
@@ -468,13 +476,13 @@ const styles = StyleSheet.create({
     color: colors.error,
   },
   addressText: {
-    ...typography.body,
     fontSize: 13,
+    color: colors.inkSoft,
     marginBottom: spacing.xs,
   },
   emptyText: {
-    ...typography.body,
-    color: colors.textSecondary,
+    fontSize: 14,
+    color: colors.inkSoft,
     textAlign: "center",
     paddingVertical: spacing.lg,
   },
@@ -486,14 +494,19 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   cancelButton: {
-    backgroundColor: colors.border,
+    backgroundColor: colors.chipBg,
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: radius.pill,
   },
   cancelButtonText: {
-    color: colors.textSecondary,
+    color: colors.inkSoft,
     fontWeight: "700",
   },
   logoutButton: {
-    backgroundColor: colors.error,
+    backgroundColor: colors.surface,
+    borderWidth: 1.5,
+    borderColor: colors.error,
     paddingHorizontal: spacing.lg,
     paddingVertical: spacing.md,
     borderRadius: radius.md,
@@ -501,13 +514,13 @@ const styles = StyleSheet.create({
     marginTop: spacing.xl,
   },
   logoutButtonText: {
-    color: colors.textOnDark,
+    color: colors.error,
     fontWeight: "700",
     fontSize: 16,
   },
   modal: {
     flex: 1,
-    backgroundColor: colors.cream,
+    backgroundColor: colors.surfaceSunken,
   },
   modalContent: {
     flex: 1,
@@ -520,12 +533,13 @@ const styles = StyleSheet.create({
     marginBottom: spacing.lg,
   },
   modalTitle: {
-    ...typography.title,
     fontSize: 18,
+    fontWeight: "700",
+    color: colors.ink,
   },
   closeButton: {
     fontSize: 24,
-    color: colors.textSecondary,
+    color: colors.inkSoft,
   },
   row: {
     flexDirection: "row",

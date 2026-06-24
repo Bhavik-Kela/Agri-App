@@ -8,11 +8,11 @@ import LoadingSpinner from "../../components/LoadingSpinner";
 import ScreenHeader from "../../components/ScreenHeader";
 import { colors, radius, spacing, typography } from "../../theme/theme";
 
-const STATUS_STYLES = {
-  pending: { background: "#FFF4CC", text: "#A66A00" },
-  accepted: { background: "#E7F7EE", text: "#1F7A4A" },
-  rejected: { background: "#FDE7E9", text: "#B42318" },
-  completed: { background: "#E9ECFF", text: "#3556D9" },
+const STATUS_META = {
+  pending:   { label: "Pending",   dot: "#B8A050" },
+  accepted:  { label: "Accepted",  dot: "#5BB880" },
+  rejected:  { label: "Rejected",  dot: "#C06060" },
+  completed: { label: "Completed", dot: "#6080C8" },
 };
 
 export default function BuyerOrdersScreen() {
@@ -34,16 +34,12 @@ export default function BuyerOrdersScreen() {
   useFocusEffect(
     useCallback(() => {
       let active = true;
-
       (async () => {
         if (active) setLoading(true);
         await fetchOrders();
         if (active) setLoading(false);
       })();
-
-      return () => {
-        active = false;
-      };
+      return () => { active = false; };
     }, [fetchOrders])
   );
 
@@ -53,9 +49,7 @@ export default function BuyerOrdersScreen() {
     setRefreshing(false);
   };
 
-  if (loading) {
-    return <LoadingSpinner label="Loading your orders..." />;
-  }
+  if (loading) return <LoadingSpinner label="Loading your orders..." />;
 
   return (
     <SafeAreaView style={styles.safeArea} edges={["top", "bottom"]}>
@@ -71,62 +65,74 @@ export default function BuyerOrdersScreen() {
         contentContainerStyle={styles.listContent}
         refreshing={refreshing}
         onRefresh={onRefresh}
+        showsVerticalScrollIndicator={false}
         ListEmptyComponent={
           <EmptyState
-            icon="📦"
+            icon="◻"
             title="No orders yet"
             subtitle="Your purchased items will appear here once you place an order."
           />
         }
         renderItem={({ item }) => {
-          const statusStyle = STATUS_STYLES[item?.status] || STATUS_STYLES.pending;
-          const sellerAddress = item?.farmer?.addresses?.find((address) => address.isDefault);
+          const meta = STATUS_META[item?.status] || STATUS_META.pending;
+          const sellerAddress = item?.farmer?.addresses?.find((a) => a.isDefault);
+          const canChat = item?.status === "accepted" || item?.status === "completed";
+
           return (
             <View style={styles.card}>
+              {/* Card header */}
               <View style={styles.cardHeader}>
                 <Text style={styles.productName} numberOfLines={1}>
                   {item?.product?.name || "Product"}
                 </Text>
-                <View
-                  style={[styles.statusBadge, { backgroundColor: statusStyle.background }]}
-                >
-                  <Text style={[styles.statusText, { color: statusStyle.text }]}>
-                    {item?.status || "pending"}
-                  </Text>
+                <View style={styles.statusBadge}>
+                  <View style={[styles.statusDot, { backgroundColor: meta.dot }]} />
+                  <Text style={styles.statusText}>{meta.label}</Text>
                 </View>
               </View>
 
-              <View style={styles.row}>
-                <Text style={styles.label}>Quantity</Text>
-                <Text style={styles.value}>{item?.quantity || 0} units</Text>
+              {/* Divider */}
+              <View style={styles.divider} />
+
+              {/* Info rows */}
+              <View style={styles.infoGrid}>
+                <InfoCell label="Quantity" value={`${item?.quantity || 0} units`} />
+                <InfoCell label="Total" value={`₹${item?.totalPrice || 0}`} />
               </View>
 
-              <View style={styles.row}>
-                <Text style={styles.label}>Total Price</Text>
-                <Text style={styles.value}>₹{item?.totalPrice || 0}</Text>
-              </View>
-
+              {/* Seller address when accepted */}
               {item?.status === "accepted" && sellerAddress ? (
                 <View style={styles.addressBlock}>
-                  <Text style={styles.addressLabel}>Seller default address</Text>
-                  <Text style={styles.addressText}>{sellerAddress.street}</Text>
-                  <Text style={styles.addressText}>
+                  <Text style={styles.addressLabel}>Pickup address</Text>
+                  <Text style={styles.addressLine}>{sellerAddress.street}</Text>
+                  <Text style={styles.addressLine}>
                     {sellerAddress.city}, {sellerAddress.state} {sellerAddress.zipCode}
                   </Text>
                 </View>
               ) : null}
 
-             {(item?.status === "accepted" || item?.status === "completed") ? (
-                <View style={styles.chatButtonRow}>
-                  <Pressable
-                    style={styles.chatButton}
-                    onPress={() => navigation.navigate("Chat", { orderId: item._id, status: item.status })}
-                  >
-                    <Text style={styles.chatButtonText}>
-                      {item.status === "completed" ? "✓ Completed · View Chat" : "💬 Chat with seller"}
-                    </Text>
-                  </Pressable>
-                </View>
+              {/* Chat button */}
+              {canChat ? (
+                <Pressable
+                  style={[
+                    styles.chatButton,
+                    item.status === "completed" && styles.chatButtonMuted,
+                  ]}
+                  onPress={() =>
+                    navigation.navigate("Chat", {
+                      orderId: item._id,
+                      status: item.status,
+                    })
+                  }
+                >
+                  <Text style={[
+                    styles.chatButtonText,
+                    item.status === "completed" && styles.chatButtonTextMuted,
+                  ]}>
+                    {item.status === "completed" ? "View Chat" : "Message Seller"}
+                  </Text>
+                  <Text style={styles.chatArrow}>→</Text>
+                </Pressable>
               ) : null}
             </View>
           );
@@ -136,85 +142,144 @@ export default function BuyerOrdersScreen() {
   );
 }
 
+function InfoCell({ label, value }) {
+  return (
+    <View style={styles.infoCell}>
+      <Text style={styles.infoCellLabel}>{label}</Text>
+      <Text style={styles.infoCellValue}>{value}</Text>
+    </View>
+  );
+}
+
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: colors.cream,
+    backgroundColor: colors.bg,
   },
   listContent: {
     padding: spacing.lg,
     flexGrow: 1,
   },
+
+  // Card
   card: {
-    backgroundColor: colors.card,
+    backgroundColor: colors.surface,
     borderRadius: radius.lg,
-    padding: spacing.lg,
-    marginBottom: spacing.md,
     borderWidth: 1,
     borderColor: colors.border,
+    marginBottom: spacing.md,
+    overflow: "hidden",
   },
   cardHeader: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    gap: spacing.sm,
-    marginBottom: spacing.md,
+    padding: spacing.lg,
+    paddingBottom: spacing.md,
   },
   productName: {
-    ...typography.title,
+    fontSize: 16,
+    fontWeight: "700",
+    color: colors.textPrimary,
     flex: 1,
+    letterSpacing: -0.3,
   },
   statusBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 5,
+    backgroundColor: colors.surfaceRaised,
     paddingHorizontal: spacing.sm,
-    paddingVertical: spacing.xs,
+    paddingVertical: 4,
     borderRadius: radius.pill,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  statusDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
   },
   statusText: {
-    ...typography.label,
     fontSize: 11,
-    textTransform: "capitalize",
-  },
-  row: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginBottom: spacing.sm,
-  },
-  label: {
-    ...typography.label,
-  },
-  value: {
-    ...typography.body,
-    color: colors.textPrimary,
     fontWeight: "600",
+    color: colors.textSecondary,
+    letterSpacing: 0.3,
   },
+  divider: {
+    height: 1,
+    backgroundColor: colors.hairline,
+    marginHorizontal: spacing.lg,
+  },
+
+  // Info grid
+  infoGrid: {
+    flexDirection: "row",
+    padding: spacing.lg,
+    paddingTop: spacing.md,
+    gap: spacing.md,
+  },
+  infoCell: {
+    flex: 1,
+  },
+  infoCellLabel: {
+    ...typography.label,
+    color: colors.textTertiary,
+    marginBottom: 4,
+  },
+  infoCellValue: {
+    fontSize: 15,
+    fontWeight: "700",
+    color: colors.textPrimary,
+    letterSpacing: -0.2,
+  },
+
+  // Address block
   addressBlock: {
-    marginTop: spacing.md,
+    marginHorizontal: spacing.lg,
+    marginBottom: spacing.md,
     padding: spacing.md,
-    backgroundColor: colors.leafLight,
+    backgroundColor: colors.surfaceRaised,
     borderRadius: radius.md,
+    borderWidth: 1,
+    borderColor: colors.border,
   },
   addressLabel: {
     ...typography.label,
-    marginBottom: spacing.xs,
+    color: colors.textTertiary,
+    marginBottom: 4,
   },
-  addressText: {
-    ...typography.body,
-    color: colors.textPrimary,
-    marginBottom: spacing.xs,
+  addressLine: {
+    fontSize: 13,
+    color: colors.textSecondary,
+    lineHeight: 18,
   },
-  chatButtonRow: {
-    marginTop: spacing.md,
-    alignItems: "flex-start",
-  },
+
+  // Chat button
   chatButton: {
-    backgroundColor: colors.leaf,
-    paddingVertical: spacing.sm,
-    paddingHorizontal: spacing.md,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    margin: spacing.lg,
+    marginTop: spacing.xs,
+    padding: spacing.md,
+    backgroundColor: colors.white,
     borderRadius: radius.md,
   },
+  chatButtonMuted: {
+    backgroundColor: colors.surfaceRaised,
+  },
   chatButtonText: {
-    color: colors.textOnDark,
-    fontWeight: "700",
     fontSize: 14,
+    fontWeight: "700",
+    color: colors.black,
+  },
+  chatButtonTextMuted: {
+    color: colors.textSecondary,
+  },
+  chatArrow: {
+    fontSize: 16,
+    color: colors.black,
+    fontWeight: "300",
   },
 });

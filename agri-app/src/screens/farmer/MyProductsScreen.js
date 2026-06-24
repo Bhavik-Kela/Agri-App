@@ -8,7 +8,7 @@ import ScreenHeader from "../../components/ScreenHeader";
 import ProductCard from "../../components/ProductCard";
 import LoadingSpinner from "../../components/LoadingSpinner";
 import EmptyState from "../../components/EmptyState";
-import { colors, spacing } from "../../theme/theme";
+import { colors, radius, spacing, typography } from "../../theme/theme";
 
 export default function MyProductsScreen({ navigation }) {
   const { user } = useAuth();
@@ -36,27 +36,38 @@ export default function MyProductsScreen({ navigation }) {
         await fetchMyProducts();
         if (active) setLoading(false);
       })();
-      return () => {
-        active = false;
-      };
+      return () => { active = false; };
     }, [fetchMyProducts])
   );
 
-  if (loading) {
-    return <LoadingSpinner label="Loading your products..." />;
-  }
+  if (loading) return <LoadingSpinner label="Loading your products..." />;
 
   return (
     <SafeAreaView style={styles.safeArea} edges={["top", "bottom"]}>
-      <ScreenHeader eyebrow="Your listings" title="My Products" />
+      <ScreenHeader
+        eyebrow="Your listings"
+        title="My Products"
+        subtitle={`${products.length} product${products.length === 1 ? "" : "s"}`}
+      />
 
       <FlatList
         data={products}
         keyExtractor={(item) => item._id}
         contentContainerStyle={styles.listContent}
+        showsVerticalScrollIndicator={false}
+        ListHeaderComponent={
+          products.length > 0 ? (
+            <Pressable
+              style={styles.addButton}
+              onPress={() => navigation.navigate("AddProduct")}
+            >
+              <Text style={styles.addButtonText}>+ Add new product</Text>
+            </Pressable>
+          ) : null
+        }
         ListEmptyComponent={
           <EmptyState
-            icon="🌱"
+            icon="◌"
             title="No products yet"
             subtitle="List your first harvest so buyers can find it."
             actionLabel="Add Product"
@@ -70,14 +81,22 @@ export default function MyProductsScreen({ navigation }) {
               navigation.navigate("ProductDetail", { productId: item._id })
             }
             footer={
-              <View style={styles.actions}>
+              <View style={styles.cardFooter}>
                 <Pressable
                   onPress={() =>
                     navigation.navigate("EditProduct", { productId: item._id })
                   }
-                  style={styles.actionChip}
+                  style={styles.editChip}
                 >
-                  <Text style={styles.actionText}>Edit</Text>
+                  <Text style={styles.editChipText}>Edit</Text>
+                </Pressable>
+                <Pressable
+                  onPress={() =>
+                    navigation.navigate("ProductDetail", { productId: item._id })
+                  }
+                  style={styles.viewChip}
+                >
+                  <Text style={styles.viewChipText}>View →</Text>
                 </Pressable>
               </View>
             }
@@ -91,24 +110,56 @@ export default function MyProductsScreen({ navigation }) {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: colors.cream,
+    backgroundColor: colors.bg,
   },
   listContent: {
     padding: spacing.lg,
     flexGrow: 1,
   },
-  actions: {
+
+  // Add button banner
+  addButton: {
+    backgroundColor: colors.surface,
+    borderRadius: radius.lg,
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderStyle: "dashed",
+    paddingVertical: spacing.md,
+    alignItems: "center",
+    marginBottom: spacing.md,
+  },
+  addButtonText: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: colors.textTertiary,
+  },
+
+  // Card footer
+  cardFooter: {
     flexDirection: "row",
+    gap: spacing.sm,
+    alignItems: "center",
   },
-  actionChip: {
-    paddingVertical: spacing.xs,
+  editChip: {
+    paddingVertical: 5,
     paddingHorizontal: spacing.sm,
-    borderRadius: 999,
-    backgroundColor: colors.leafLight,
+    borderRadius: radius.pill,
+    backgroundColor: colors.surfaceRaised,
+    borderWidth: 1,
+    borderColor: colors.border,
   },
-  actionText: {
+  editChipText: {
     fontSize: 12,
-    fontWeight: "700",
-    color: colors.forestDark,
+    fontWeight: "600",
+    color: colors.textSecondary,
+  },
+  viewChip: {
+    paddingVertical: 5,
+    paddingHorizontal: spacing.sm,
+  },
+  viewChipText: {
+    fontSize: 12,
+    fontWeight: "500",
+    color: colors.textTertiary,
   },
 });

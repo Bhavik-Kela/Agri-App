@@ -5,7 +5,7 @@ import AuthLayout from "../components/AuthLayout";
 import FieldInput from "../components/FieldInput";
 import RoleSelector from "../components/RoleSelector";
 import GradientButton from "../components/GradientButton";
-import { colors, spacing, typography } from "../theme/theme";
+import { colors, typography } from "../theme/theme";
 
 export default function RegisterScreen({ navigation }) {
   const [name, setName] = useState("");
@@ -19,69 +19,37 @@ export default function RegisterScreen({ navigation }) {
   const [passwordError, setPasswordError] = useState("");
   const [confirmPasswordError, setConfirmPasswordError] = useState("");
 
-  const validateEmail = (email) => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
-  };
+  const validateEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  const validatePassword = (password) =>
+    password.length >= 6 && /[A-Z]/.test(password) && /[0-9]/.test(password);
 
-  const validatePassword = (password) => {
-    // At least 6 characters, 1 uppercase, 1 number
-    return password.length >= 6 && /[A-Z]/.test(password) && /[0-9]/.test(password);
-  };
-
-  // Original registration logic preserved exactly — only the surrounding UI changed.
   const handleRegister = async () => {
-    // Validate inputs
     let isValid = true;
 
-    if (!name.trim()) {
-      setNameError("Name is required");
-      isValid = false;
-    } else {
-      setNameError("");
-    }
+    if (!name.trim()) { setNameError("Name is required"); isValid = false; }
+    else setNameError("");
 
-    if (!email) {
-      setEmailError("Email is required");
-      isValid = false;
-    } else if (!validateEmail(email)) {
-      setEmailError("Please enter a valid email");
-      isValid = false;
-    } else {
-      setEmailError("");
-    }
+    if (!email) { setEmailError("Email is required"); isValid = false; }
+    else if (!validateEmail(email)) { setEmailError("Please enter a valid email"); isValid = false; }
+    else setEmailError("");
 
-    if (!password) {
-      setPasswordError("Password is required");
+    if (!password) { setPasswordError("Password is required"); isValid = false; }
+    else if (!validatePassword(password)) {
+      setPasswordError("6+ chars, 1 uppercase, 1 number");
       isValid = false;
-    } else if (!validatePassword(password)) {
-      setPasswordError("Password must have 6+ chars, 1 uppercase, 1 number");
-      isValid = false;
-    } else {
-      setPasswordError("");
-    }
+    } else setPasswordError("");
 
-    if (!confirmPassword) {
-      setConfirmPasswordError("Please confirm password");
-      isValid = false;
-    } else if (password !== confirmPassword) {
+    if (!confirmPassword) { setConfirmPasswordError("Please confirm password"); isValid = false; }
+    else if (password !== confirmPassword) {
       setConfirmPasswordError("Passwords do not match");
       isValid = false;
-    } else {
-      setConfirmPasswordError("");
-    }
+    } else setConfirmPasswordError("");
 
     if (!isValid) return;
 
     setLoading(true);
     try {
-      const res = await API.post("/auth/register", {
-        name,
-        email,
-        password,
-        role,
-      });
-
+      const res = await API.post("/auth/register", { name, email, password, role });
       Alert.alert("Success", res.data.message || "Registration successful");
       navigation?.navigate?.("Login");
     } catch (err) {
@@ -95,7 +63,7 @@ export default function RegisterScreen({ navigation }) {
   return (
     <AuthLayout
       eyebrow="Welcome to AgriApp"
-      title="Create your account"
+      title="Create account"
       subtitle="Join farmers and buyers trading directly"
       footer={
         <Pressable onPress={() => navigation?.navigate?.("Login")}>
@@ -110,10 +78,7 @@ export default function RegisterScreen({ navigation }) {
         label="Name"
         placeholder="Your full name"
         value={name}
-        onChangeText={(text) => {
-          setName(text);
-          setNameError("");
-        }}
+        onChangeText={(t) => { setName(t); setNameError(""); }}
         autoCapitalize="words"
         error={nameError}
       />
@@ -121,21 +86,15 @@ export default function RegisterScreen({ navigation }) {
         label="Email"
         placeholder="you@example.com"
         value={email}
-        onChangeText={(text) => {
-          setEmail(text);
-          setEmailError("");
-        }}
+        onChangeText={(t) => { setEmail(t); setEmailError(""); }}
         keyboardType="email-address"
         error={emailError}
       />
       <FieldInput
         label="Password"
-        placeholder="At least 6 characters, 1 uppercase, 1 number"
+        placeholder="6+ chars, 1 uppercase, 1 number"
         value={password}
-        onChangeText={(text) => {
-          setPassword(text);
-          setPasswordError("");
-        }}
+        onChangeText={(t) => { setPassword(t); setPasswordError(""); }}
         secureTextEntry
         error={passwordError}
       />
@@ -143,10 +102,7 @@ export default function RegisterScreen({ navigation }) {
         label="Confirm Password"
         placeholder="Re-enter your password"
         value={confirmPassword}
-        onChangeText={(text) => {
-          setConfirmPassword(text);
-          setConfirmPasswordError("");
-        }}
+        onChangeText={(t) => { setConfirmPassword(t); setConfirmPasswordError(""); }}
         secureTextEntry
         error={confirmPasswordError}
       />
@@ -154,7 +110,7 @@ export default function RegisterScreen({ navigation }) {
       <RoleSelector value={role} onChange={setRole} />
 
       <GradientButton
-        title={loading ? "Creating account..." : "Create account"}
+        title={loading ? "Creating account…" : "Create account"}
         onPress={handleRegister}
         loading={loading}
         disabled={!name || !email || !password || !confirmPassword}
@@ -166,10 +122,12 @@ export default function RegisterScreen({ navigation }) {
 const styles = {
   footerText: {
     ...typography.body,
-    fontSize: 14,
+    fontSize: 13,
+    color: colors.textTertiary,
+    textAlign: "center",
   },
   footerLink: {
-    color: colors.forest,
+    color: colors.textPrimary,
     fontWeight: "700",
   },
 };

@@ -1,6 +1,6 @@
 import React from "react";
 import { View, Text, Pressable, StyleSheet, Image } from "react-native";
-import { colors, radius, spacing, typography } from "../theme/theme";
+import { mono, radius, spacing, colors } from "../theme/theme";
 
 const SERVER_ORIGIN = "http://10.148.186.109:5000";
 
@@ -66,15 +66,15 @@ const styles = StyleSheet.create({
   card: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: colors.card,
+    backgroundColor: colors.surface,
     borderRadius: radius.lg,
     padding: spacing.md,
     marginBottom: spacing.md,
     borderWidth: 1,
-    borderColor: colors.border,
-    shadowColor: colors.forestDark,
+    borderColor: colors.hairline,
+    shadowColor: colors.ink,
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.06,
+    shadowOpacity: 0.05,
     shadowRadius: 10,
     elevation: 2,
   },
@@ -85,7 +85,7 @@ const styles = StyleSheet.create({
     width: 52,
     height: 52,
     borderRadius: radius.md,
-    backgroundColor: colors.leafLight,
+    backgroundColor: colors.chipBg,
     alignItems: "center",
     justifyContent: "center",
     marginRight: spacing.md,
@@ -103,17 +103,22 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   name: {
-    ...typography.title,
     fontSize: 16,
+    fontWeight: "700",
+    color: colors.ink,
   },
   otherName: {
     fontSize: 12,
-    color: colors.textSecondary,
+    color: colors.inkSoft,
     marginTop: 2,
     fontStyle: "italic",
   },
   category: {
-    ...typography.label,
+    fontSize: 11,
+    fontWeight: "700",
+    letterSpacing: 0.8,
+    textTransform: "uppercase",
+    color: colors.inkSoft,
     marginTop: 2,
   },
   metaRow: {
@@ -123,17 +128,16 @@ const styles = StyleSheet.create({
   },
   price: {
     fontSize: 15,
-    fontWeight: "700",
-    color: colors.amberDark,
+    fontWeight: "800",
+    color: colors.ink,
   },
   dot: {
-    color: colors.textSecondary,
+    color: colors.surfaceRaised,
     marginHorizontal: 6,
   },
   quantity: {
-    ...typography.body,
     fontSize: 13,
-  },
+    color: colors.inkSoft},
   footer: {
     marginLeft: spacing.sm,
   },
