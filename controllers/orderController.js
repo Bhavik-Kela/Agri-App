@@ -1,50 +1,65 @@
-const Order = require("../models/Order");
+const Order = require("../models/order");
 const Product = require("../models/Product");
 const Message = require("../models/Message");
 const User = require("../models/User");
 
 exports.createOrder = async (req, res) => {
   try {
-
     const { productId, quantity } = req.body;
 
-    const product =
-      await Product.findById(productId);
+    const qty = Number(quantity);
+    if (!Number.isFinite(qty) || qty <= 0) {
+      return res.status(400).json({ message: "Invalid quantity" });
+    }
+
+    const product = await Product.findById(productId);
 
     if (!product) {
-      return res.status(404).json({
-        message: "Product not found"
+      return res.status(404).json({ message: "Product not found" });
+    }
+
+    // Look for an existing PENDING order from this same buyer on this product
+    const existingPending = await Order.findOne({
+      buyer: req.user.id,
+      product: product._id,
+      status: "pending",
+    });
+
+    const alreadyReserved = existingPending ? existingPending.quantity : 0;
+    const newTotalQty = alreadyReserved + qty;
+
+    if (newTotalQty > product.quantity) {
+      const remaining = Math.max(product.quantity - alreadyReserved, 0);
+      return res.status(400).json({
+        message: `You can only reserve ${remaining} more unit(s) of this product.`,
       });
     }
 
-    const totalPrice =
-      product.price * quantity;
+    if (existingPending) {
+      // Merge: bump quantity and recompute total price on the SAME order
+      existingPending.quantity = newTotalQty;
+      existingPending.totalPrice = product.price * newTotalQty;
+      await existingPending.save();
+      return res.status(200).json(existingPending);
+    }
 
-    const order =
-      await Order.create({
+    const totalPrice = product.price * qty;
 
-        buyer: req.user.id,
-
-        farmer: product.farmer,
-
-        product: product._id,
-
-        quantity,
-
-        totalPrice
-
-      });
+    const order = await Order.create({
+      buyer: req.user.id,
+      farmer: product.farmer,
+      product: product._id,
+      quantity: qty,
+      totalPrice,
+    });
 
     res.status(201).json(order);
 
   } catch (error) {
-
-    res.status(500).json({
-      message: error.message
-    });
-
+    res.status(500).json({ message: error.message });
   }
 };
+
 
 exports.getMyOrders = async (req, res) => {
   try {
@@ -91,9 +106,7 @@ exports.updateOrderStatus = async (req, res) => {
 
     const { status } = req.body;
 
-    const order = await Order.findById(
-      req.params.id
-    );
+    const order = await Order.findById(req.params.id);
 
     if (!order) {
       return res.status(404).json({
@@ -107,6 +120,53 @@ exports.updateOrderStatus = async (req, res) => {
       return res.status(403).json({
         message: "Not authorized"
       });
+    }
+
+    if (order.status === "accepted" && status === "rejected") {
+      return res.status(400).json({
+        message: "This order has already been accepted. It cannot be rejected."
+      });
+    }
+
+    if (order.status === "rejected" || order.status === "completed") {
+      return res.status(400).json({
+        message: "This order cannot be modified."
+      });
+    }
+
+    // Accepting an order locks in stock: decrement product quantity,
+    // then trim or remove any other pending orders that no longer fit.
+    if (status === "accepted" && order.status !== "accepted") {
+      const product = await Product.findById(order.product);
+
+      if (!product) {
+        return res.status(404).json({ message: "Product not found" });
+      }
+
+      if (order.quantity > product.quantity) {
+        return res.status(400).json({
+          message: "Not enough stock remaining to accept this order."
+        });
+      }
+
+      product.quantity -= order.quantity;
+      await product.save();
+
+      const otherPending = await Order.find({
+        product: product._id,
+        status: "pending",
+        _id: { $ne: order._id },
+      });
+
+      for (const other of otherPending) {
+        if (product.quantity <= 0) {
+          await Order.deleteOne({ _id: other._id });
+        } else if (other.quantity > product.quantity) {
+          other.quantity = product.quantity;
+          other.totalPrice = product.price * product.quantity;
+          await other.save();
+        }
+      }
     }
 
     order.status = status;

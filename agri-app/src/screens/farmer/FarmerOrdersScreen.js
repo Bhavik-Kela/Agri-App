@@ -249,9 +249,15 @@ export default function FarmerOrdersScreen({ navigation }) {
 
                 {item?.status === "accepted" && (
                   <>
-                    <TouchableOpacity
+                      <TouchableOpacity
                       style={[styles.actionButton, styles.chatButton]}
-                      onPress={() => navigation.navigate("Chat", { orderId: item._id, buyerId: item.buyer._id })}
+                      onPress={() => {
+                        if (!item?._id || !item?.buyer?._id) {
+                          Alert.alert("Error", "Chat unavailable: missing order or buyer info.");
+                          return;
+                        }
+                        navigation.navigate("Chat", { orderId: item._id, buyerId: item.buyer._id, status: item.status});
+                      }}
                     >
                       <Text style={[styles.actionButtonText, styles.chatButtonText]}>
                         💬 Chat
@@ -269,13 +275,23 @@ export default function FarmerOrdersScreen({ navigation }) {
                   </>
                 )}
 
-                {item?.status === "completed" && (
+               {item?.status === "completed" && (
                   <TouchableOpacity
-                    style={[styles.actionButton, styles.disabledButton]}
-                    disabled={true}
+                    style={[styles.actionButton, styles.chatButton]}
+                    onPress={() => {
+                      if (!item?._id || !item?.buyer?._id) {
+                        Alert.alert("Error", "Chat unavailable: missing order or buyer info.");
+                        return;
+                      }
+                      navigation.navigate("Chat", {
+                        orderId: item._id,
+                        buyerId: item.buyer._id,
+                        status: item.status,
+                      });
+                    }}
                   >
-                    <Text style={[styles.actionButtonText, styles.disabledButtonText]}>
-                      ✓ Completed
+                    <Text style={[styles.actionButtonText, styles.chatButtonText]}>
+                      ✓ Completed · View Chat
                     </Text>
                   </TouchableOpacity>
                 )}

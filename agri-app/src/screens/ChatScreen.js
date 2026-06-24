@@ -19,7 +19,8 @@ import { colors, spacing, radius, typography } from "../theme/theme";
 import { useAuth } from "../context/AuthContext";
 
 export default function ChatScreen({ route, navigation }) {
-  const { orderId, buyerId } = route.params;
+  const { orderId, buyerId, status } = route.params;
+  const isReadOnly = status === "completed";
   const { user } = useAuth();
   const [messages, setMessages] = useState([]);
   const [inputText, setInputText] = useState("");
@@ -94,7 +95,7 @@ export default function ChatScreen({ route, navigation }) {
     return <LoadingSpinner label="Loading chat..." />;
   }
 
-  const isUserSender = user?._id === messages[messages.length - 1]?.sender?._id;
+  const isUserSender = user?.id === messages[messages.length - 1]?.sender?._id;
 
   return (
     <SafeAreaView style={styles.safeArea} edges={["top", "bottom"]}>
@@ -114,7 +115,7 @@ export default function ChatScreen({ route, navigation }) {
           keyExtractor={(item, index) => `${item._id}-${index}`}
           contentContainerStyle={styles.messagesContainer}
           renderItem={({ item }) => {
-            const isFromCurrentUser = item.sender?._id === user?._id;
+            const isFromCurrentUser = item.sender?._id === user?.id;
             return (
               <View
                 style={[
@@ -164,27 +165,35 @@ export default function ChatScreen({ route, navigation }) {
           }}
         />
 
-        <View style={styles.inputContainer}>
-          <TextInput
-            style={styles.input}
-            placeholder="Type a message..."
-            value={inputText}
-            onChangeText={setInputText}
-            multiline
-            maxLength={500}
-            editable={!sending}
-            placeholderTextColor={colors.textSecondary}
-          />
-          <TouchableOpacity
-            style={[styles.sendButton, sending && styles.sendButtonDisabled]}
-            onPress={handleSendMessage}
-            disabled={sending || !inputText.trim()}
-          >
-            <Text style={styles.sendButtonText}>
-              {sending ? "..." : "Send"}
+        {isReadOnly ? (
+          <View style={styles.inputContainer}>
+            <Text style={[styles.messageText, { flex: 1, textAlign: "center", color: colors.textSecondary }]}>
+              This order is completed. Chat is read-only.
             </Text>
-          </TouchableOpacity>
-        </View>
+          </View>
+        ) : (
+          <View style={styles.inputContainer}>
+            <TextInput
+              style={styles.input}
+              placeholder="Type a message..."
+              value={inputText}
+              onChangeText={setInputText}
+              multiline
+              maxLength={500}
+              editable={!sending}
+              placeholderTextColor={colors.textSecondary}
+            />
+            <TouchableOpacity
+              style={[styles.sendButton, sending && styles.sendButtonDisabled]}
+              onPress={handleSendMessage}
+              disabled={sending || !inputText.trim()}
+            >
+              <Text style={styles.sendButtonText}>
+                {sending ? "..." : "Send"}
+              </Text>
+            </TouchableOpacity>
+          </View>
+        )}
       </KeyboardAvoidingView>
     </SafeAreaView>
   );

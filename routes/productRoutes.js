@@ -55,6 +55,10 @@ router.get("/:id", getProductById);
 
 router.put(
   "/:id",
+  (req, res, next) => {
+    console.log("PUT /products/:id HIT");
+    next();
+  },
   authMiddleware,
   upload.single("photo"),
   updateProduct

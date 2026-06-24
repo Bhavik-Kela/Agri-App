@@ -6,6 +6,7 @@ import {
   StyleSheet,
   Alert,
   TextInput,
+  Image,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useFocusEffect } from "@react-navigation/native";
@@ -15,6 +16,16 @@ import ScreenHeader from "../components/ScreenHeader";
 import GradientButton from "../components/GradientButton";
 import LoadingSpinner from "../components/LoadingSpinner";
 import { colors, radius, spacing, typography } from "../theme/theme";
+
+const SERVER_ORIGIN = "http://10.148.186.109:5000";
+
+function resolveImageUri(photo) {
+  if (!photo) return null;
+  if (photo.startsWith("http://") || photo.startsWith("https://")) {
+    return photo;
+  }
+  return `${SERVER_ORIGIN}${photo.startsWith("/") ? "" : "/"}${photo}`;
+}
 
 const CATEGORY_ICONS = {
   Vegetable: "🥬",
@@ -134,9 +145,15 @@ export default function ProductDetailScreen({ route, navigation }) {
 
       <ScrollView contentContainerStyle={styles.content}>
         <View style={styles.iconWrap}>
-          <Text style={styles.icon}>{icon}</Text>
+          {product?.photo ? (
+            <Image
+              source={{ uri: resolveImageUri(product.photo) }}
+              style={styles.productImage}
+            />
+          ) : (
+            <Text style={styles.icon}>{icon}</Text>
+          )}
         </View>
-
         <View style={styles.card}>
           <DetailRow label="Price" value={`₹${product.price} / unit`} />
           <View style={styles.divider} />
@@ -225,6 +242,12 @@ const styles = StyleSheet.create({
   },
   icon: {
     fontSize: 44,
+  },
+  productImage: {
+    width: "100%",
+    height: "100%",
+    borderRadius: radius.lg,
+    resizeMode: "cover",
   },
   card: {
     backgroundColor: colors.card,

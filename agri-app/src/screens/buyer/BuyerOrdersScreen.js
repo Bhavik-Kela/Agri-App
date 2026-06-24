@@ -1,7 +1,7 @@
 import React, { useCallback, useState } from "react";
 import { Alert, FlatList, StyleSheet, Text, View, Pressable } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useFocusEffect } from "@react-navigation/native";
+import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import API from "../../../services/api";
 import EmptyState from "../../components/EmptyState";
 import LoadingSpinner from "../../components/LoadingSpinner";
@@ -16,6 +16,7 @@ const STATUS_STYLES = {
 };
 
 export default function BuyerOrdersScreen() {
+  const navigation = useNavigation();
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -115,13 +116,15 @@ export default function BuyerOrdersScreen() {
                 </View>
               ) : null}
 
-              {item?.status === "accepted" ? (
+             {(item?.status === "accepted" || item?.status === "completed") ? (
                 <View style={styles.chatButtonRow}>
                   <Pressable
                     style={styles.chatButton}
-                    onPress={() => navigation.navigate("Chat", { orderId: item._id })}
+                    onPress={() => navigation.navigate("Chat", { orderId: item._id, status: item.status })}
                   >
-                    <Text style={styles.chatButtonText}>💬 Chat with seller</Text>
+                    <Text style={styles.chatButtonText}>
+                      {item.status === "completed" ? "✓ Completed · View Chat" : "💬 Chat with seller"}
+                    </Text>
                   </Pressable>
                 </View>
               ) : null}

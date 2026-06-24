@@ -110,7 +110,7 @@ export default function MarketplaceScreen({ navigation }) {
           {/* Category Filter */}
           <View style={styles.filterSection}>
             <Text style={styles.filterLabel}>Category:</Text>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.filterOptions}>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filterOptions}>
               {CATEGORIES.map((cat) => (
                 <Pressable
                   key={cat}
@@ -136,7 +136,7 @@ export default function MarketplaceScreen({ navigation }) {
           {/* Sort Options */}
           <View style={styles.filterSection}>
             <Text style={styles.filterLabel}>Sort:</Text>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.filterOptions}>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filterOptions}>
               {[
                 { label: "Default", value: "default" },
                 { label: "Price: Low to High", value: "priceAsc" },
@@ -216,25 +216,29 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: colors.border,
   },
-  filterSection: {
-    marginRight: spacing.lg,
-  },
+ filterSection: {
+  marginRight: spacing.lg,
+  alignItems: "flex-start",
+},
   filterLabel: {
     ...typography.label,
     marginBottom: spacing.sm,
   },
   filterOptions: {
-    flexDirection: "row",
-  },
-  filterChip: {
-    paddingVertical: spacing.sm,
-    paddingHorizontal: spacing.md,
-    borderRadius: radius.pill,
-    borderWidth: 1.5,
-    borderColor: colors.border,
-    backgroundColor: colors.cream,
-    marginRight: spacing.sm,
-  },
+  flexDirection: "row",
+  alignItems: "center",
+},
+ filterChip: {
+  height: 36,
+  paddingVertical: spacing.sm,
+  paddingHorizontal: spacing.md,
+  borderRadius: radius.pill,
+  borderWidth: 1.5,
+  borderColor: colors.border,
+  backgroundColor: colors.cream,
+  marginRight: spacing.sm,
+  justifyContent: "center",
+},
   filterChipActive: {
     backgroundColor: colors.leaf,
     borderColor: colors.leaf,

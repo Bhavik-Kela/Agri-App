@@ -2,6 +2,16 @@ import React from "react";
 import { View, Text, Pressable, StyleSheet, Image } from "react-native";
 import { colors, radius, spacing, typography } from "../theme/theme";
 
+const SERVER_ORIGIN = "http://10.148.186.109:5000";
+
+function resolveImageUri(photo) {
+  if (!photo) return null;
+  if (photo.startsWith("http://") || photo.startsWith("https://")) {
+    return photo;
+  }
+  return `${SERVER_ORIGIN}${photo.startsWith("/") ? "" : "/"}${photo}`;
+}
+
 const CATEGORY_ICONS = {
   Vegetable: "🥬",
   Fruit: "🍎",
@@ -22,7 +32,7 @@ export default function ProductCard({ product, onPress, footer }) {
       <View style={styles.iconWrap}>
         {product?.photo ? (
           <Image
-            source={{ uri: product.photo }}
+            source={{ uri: resolveImageUri(product.photo) }}
             style={styles.productImage}
           />
         ) : (

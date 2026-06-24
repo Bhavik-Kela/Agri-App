@@ -43,6 +43,7 @@ export default function EditProductScreen({ route, navigation }) {
   }, [productId]);
 
   const handleSubmit = async () => {
+    console.log("VALUES AT SUBMIT:", JSON.stringify(values));
     setSubmitting(true);
     try {
       const formData = new FormData();
@@ -55,7 +56,7 @@ export default function EditProductScreen({ route, navigation }) {
       if (values.otherProductName) {
         formData.append("otherProductName", values.otherProductName);
       }
-      if (values.photo && !values.photo.startsWith("http")) {
+      if (values.photo && (values.photo.startsWith("file://") || values.photo.startsWith("content://"))) {
         const uriParts = values.photo.split(".");
         const fileType = uriParts[uriParts.length - 1];
         formData.append("photo", {
@@ -73,8 +74,10 @@ export default function EditProductScreen({ route, navigation }) {
 
       Alert.alert("Success", "Product updated successfully");
       navigation.navigate("ProductDetail", { productId });
-    } catch (err) {
-      console.log(err.response?.data);
+   } catch (err) {
+      console.log("FULL ERROR:", err.message);
+      console.log("STATUS:", err.response?.status);
+      console.log("DATA:", JSON.stringify(err.response?.data));
       Alert.alert(
         "Error",
         err.response?.data?.message || "Could not update product"
