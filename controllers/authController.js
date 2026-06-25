@@ -123,6 +123,38 @@ exports.profile = async (req, res) => {
   }
 };
 
+// Get Farmer Profile (public info only — used by buyers to view a farmer's card)
+
+exports.getFarmerProfile = async (req, res) => {
+  try {
+    const { farmerId } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(farmerId)) {
+      return res.status(400).json({
+        message: "Invalid farmer id",
+      });
+    }
+
+    const farmer = await User.findOne({
+      _id: farmerId,
+      role: "farmer",
+    }).select("name role profilePhoto averageFarmerRating farmerReviewCount");
+
+    if (!farmer) {
+      return res.status(404).json({
+        message: "Farmer not found",
+      });
+    }
+
+    res.json(farmer);
+
+  } catch (error) {
+    res.status(500).json({
+      message: error.message,
+    });
+  }
+};
+
 // Update Profile
 
 exports.updateProfile = async (req, res) => {

@@ -13,6 +13,7 @@ import API from "../../../services/api";
 import EmptyState from "../../components/EmptyState";
 import LoadingSpinner from "../../components/LoadingSpinner";
 import ScreenHeader from "../../components/ScreenHeader";
+import RatingBadge from "../../components/RatingBadge";
 import { colors, radius, spacing, typography } from "../../theme/theme";
 
 const STATUS_META = {
@@ -117,6 +118,35 @@ function OrderCard({ item, navigation }) {
       {/* Divider */}
       <View style={styles.divider} />
 
+      {/* Sold by */}
+      <Pressable
+        style={({ pressed }) => [
+          styles.sellerRow,
+          pressed && item?.farmer?._id && styles.sellerRowPressed,
+        ]}
+        disabled={!item?.farmer?._id}
+        onPress={() =>
+          navigation.navigate("FarmerProfile", {
+            farmerId:   item.farmer._id,
+            farmerName: item.farmer.name,
+          })
+        }
+      >
+        <Text style={styles.sellerName} numberOfLines={1}>Sold by {farmerName}</Text>
+        {item?.farmer?.averageFarmerRating ? (
+          <View style={styles.sellerRatingRow}>
+            <Text style={styles.sellerRatingStar}>★</Text>
+            <Text style={styles.sellerRatingValue}>
+              {Number(item.farmer.averageFarmerRating).toFixed(1)}
+            </Text>
+            <Text style={styles.sellerRatingLabel}>
+              farmer rating · {item.farmer.farmerReviewCount}{" "}
+              {item.farmer.farmerReviewCount === 1 ? "review" : "reviews"}
+            </Text>
+          </View>
+        ) : null}
+      </Pressable>
+
       {/* Info rows */}
       <View style={styles.infoGrid}>
         <InfoCell label="Quantity" value={`${item?.quantity || 0} units`} />
@@ -161,6 +191,7 @@ function OrderCard({ item, navigation }) {
                 navigation.navigate("WriteFarmerReview", {
                   orderId:    item._id,
                   farmerName,
+                  order:      item,
                 })
               }
             />
@@ -294,6 +325,40 @@ const styles = StyleSheet.create({
     height: 1,
     backgroundColor: colors.hairline,
     marginHorizontal: spacing.lg,
+  },
+
+  /* Sold by */
+  sellerRow: {
+    paddingHorizontal: spacing.lg,
+    paddingTop: spacing.md,
+  },
+  sellerRowPressed: {
+    opacity: 0.6,
+  },
+  sellerName: {
+    fontSize: 13,
+    color: colors.textSecondary,
+    fontWeight: "600",
+  },
+  sellerRatingRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: 2,
+    gap: 3,
+  },
+  sellerRatingStar: {
+    fontSize: 11,
+    color: "#D4A017",
+  },
+  sellerRatingValue: {
+    fontSize: 11,
+    fontWeight: "700",
+    color: colors.textPrimary,
+  },
+  sellerRatingLabel: {
+    fontSize: 11,
+    color: colors.textTertiary,
+    marginLeft: 2,
   },
 
   /* Info grid */

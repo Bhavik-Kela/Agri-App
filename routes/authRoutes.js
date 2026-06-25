@@ -5,6 +5,7 @@ const {
   register,
   login,
   profile,
+  getFarmerProfile,
   updateProfile,
   addAddress,
   setDefaultAddress,
@@ -19,6 +20,7 @@ router.post("/login", login);
 router.post("/reset-password", resetPassword);
 
 router.get("/profile", authMiddleware, profile);
+router.get("/farmer/:farmerId", authMiddleware, getFarmerProfile);
 
 router.put("/profile", authMiddleware, updateProfile);
 

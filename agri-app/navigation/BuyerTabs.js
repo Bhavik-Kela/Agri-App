@@ -14,6 +14,7 @@ import MarketplaceScreen         from "../src/screens/buyer/MarketplaceScreen";
 import BuyerOrdersScreen         from "../src/screens/buyer/BuyerOrdersScreen";
 import WriteProductReviewScreen  from "../src/screens/buyer/WriteProductReviewScreen";
 import WriteFarmerReviewScreen   from "../src/screens/buyer/WriteFarmerReviewScreen";
+import FarmerProfileScreen       from "../src/screens/buyer/FarmerProfileScreen";
 import ProductDetailScreen       from "../src/screens/ProductDetailScreen";
 import ChatScreen                from "../src/screens/ChatScreen";
 import ProfileScreen             from "../src/screens/ProfileScreen";
@@ -26,6 +27,7 @@ function MarketplaceStackScreen() {
     <MarketplaceStack.Navigator screenOptions={{ headerShown: false }}>
       <MarketplaceStack.Screen name="Marketplace"   component={MarketplaceScreen}   />
       <MarketplaceStack.Screen name="ProductDetail" component={ProductDetailScreen} />
+      <MarketplaceStack.Screen name="FarmerProfile" component={FarmerProfileScreen} />
       <MarketplaceStack.Screen name="Chat"          component={ChatScreen}          />
     </MarketplaceStack.Navigator>
   );
@@ -39,6 +41,7 @@ function OrdersStackScreen() {
       <OrdersStack.Screen name="Orders"               component={BuyerOrdersScreen}        />
       <OrdersStack.Screen name="WriteProductReview"   component={WriteProductReviewScreen} />
       <OrdersStack.Screen name="WriteFarmerReview"    component={WriteFarmerReviewScreen}  />
+      <OrdersStack.Screen name="FarmerProfile"        component={FarmerProfileScreen}      />
       <OrdersStack.Screen name="Chat"                 component={ChatScreen}               />
     </OrdersStack.Navigator>
   );

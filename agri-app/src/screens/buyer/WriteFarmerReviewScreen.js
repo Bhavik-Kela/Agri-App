@@ -58,7 +58,14 @@ const INITIAL_RATINGS = {
 };
 
 export default function WriteFarmerReviewScreen({ route, navigation }) {
-  const { orderId, farmerName } = route.params || {};
+  const { orderId, farmerName, order } = route.params || {};
+
+  const productName = order?.product?.name;
+  const quantity     = order?.quantity;
+  const totalPrice   = order?.totalPrice;
+  const orderDate    = order?.createdAt
+    ? new Date(order.createdAt).toLocaleDateString()
+    : null;
 
   const [ratings,    setRatings]    = useState(INITIAL_RATINGS);
   const [comment,    setComment]    = useState("");
@@ -78,7 +85,6 @@ export default function WriteFarmerReviewScreen({ route, navigation }) {
     CATEGORIES.forEach(({ key, label }) => {
       if (!ratings[key]) e[key] = `Please rate ${label.toLowerCase()}.`;
     });
-    if (!comment.trim()) e.comment = "Please write a comment.";
     setErrors(e);
     return Object.keys(e).length === 0;
   }
@@ -135,6 +141,39 @@ export default function WriteFarmerReviewScreen({ route, navigation }) {
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
+        {/* Order summary */}
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>Order summary</Text>
+          <View style={styles.summaryRow}>
+            <Text style={styles.summaryLabel}>Farmer</Text>
+            <Text style={styles.summaryValue}>{farmerName || "Farmer"}</Text>
+          </View>
+          {productName ? (
+            <View style={styles.summaryRow}>
+              <Text style={styles.summaryLabel}>Product</Text>
+              <Text style={styles.summaryValue}>{productName}</Text>
+            </View>
+          ) : null}
+          {quantity != null ? (
+            <View style={styles.summaryRow}>
+              <Text style={styles.summaryLabel}>Quantity</Text>
+              <Text style={styles.summaryValue}>{quantity} units</Text>
+            </View>
+          ) : null}
+          {totalPrice != null ? (
+            <View style={styles.summaryRow}>
+              <Text style={styles.summaryLabel}>Total</Text>
+              <Text style={styles.summaryValue}>₹{totalPrice}</Text>
+            </View>
+          ) : null}
+          {orderDate ? (
+            <View style={styles.summaryRow}>
+              <Text style={styles.summaryLabel}>Date</Text>
+              <Text style={styles.summaryValue}>{orderDate}</Text>
+            </View>
+          ) : null}
+        </View>
+
         {/* Category ratings */}
         <View style={styles.card}>
           <Text style={styles.cardTitle}>Rate your experience</Text>
@@ -258,6 +297,23 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     color: colors.textPrimary,
     letterSpacing: -0.2,
+  },
+
+  /* Order summary */
+  summaryRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+  summaryLabel: {
+    fontSize: 13,
+    color: colors.textTertiary,
+    fontWeight: "500",
+  },
+  summaryValue: {
+    fontSize: 13,
+    color: colors.textPrimary,
+    fontWeight: "600",
   },
 
   /* Category rows */

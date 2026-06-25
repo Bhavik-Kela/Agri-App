@@ -68,7 +68,7 @@ exports.getMyOrders = async (req, res) => {
       buyer: req.user.id
     })
     .populate("product", "name price pricePerUnit unit category")
-    .populate("farmer", "name email phone addresses");
+    .populate("farmer", "name email phone addresses averageFarmerRating farmerReviewCount");
 
     res.json(orders);
 

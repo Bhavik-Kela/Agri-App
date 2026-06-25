@@ -310,6 +310,15 @@ export default function MarketplaceScreen({ navigation }) {
                 onPress={() =>
                   navigation.navigate("ProductDetail", { productId: item._id })
                 }
+                onFarmerPress={
+                  item?.farmer?._id
+                    ? () =>
+                        navigation.navigate("FarmerProfile", {
+                          farmerId:   item.farmer._id,
+                          farmerName: item.farmer.name,
+                        })
+                    : undefined
+                }
               />
             </StaggeredCard>
           )}

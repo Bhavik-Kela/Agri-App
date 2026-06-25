@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import {
   View,
   Text,
@@ -15,6 +15,7 @@ import ScreenHeader from "../components/ScreenHeader";
 import FieldInput from "../components/FieldInput";
 import GradientButton from "../components/GradientButton";
 import LoadingSpinner from "../components/LoadingSpinner";
+import FarmerRatingSummary from "../components/FarmerRatingSummary";
 import { mono, spacing, radius } from "../theme/theme";
 import { useAuth } from "../context/AuthContext";
 import { colors } from "../theme/theme";
@@ -38,6 +39,10 @@ export default function ProfileScreen({ navigation }) {
     state: "",
     zipCode: "",
   });
+
+  // ── Farmer rating state (only relevant when profile.role === "farmer") ──
+  const [farmerRatingData,    setFarmerRatingData]    = useState(null); // { averageFarmerRating, farmerReviewCount, reviews }
+  const [farmerRatingLoading, setFarmerRatingLoading]  = useState(false);
 
   const fetchProfile = useCallback(async () => {
     try {
@@ -69,6 +74,27 @@ export default function ProfileScreen({ navigation }) {
       };
     }, [fetchProfile])
   );
+
+  const fetchFarmerRating = useCallback(async (farmerId) => {
+    if (!farmerId) return;
+    setFarmerRatingLoading(true);
+    try {
+      const res = await API.get(`/farmer-reviews/${farmerId}`);
+      setFarmerRatingData(res.data);
+    } catch (err) {
+      // Rating failing silently — not critical to profile display
+      console.log("Farmer rating fetch error:", err?.response?.data);
+    } finally {
+      setFarmerRatingLoading(false);
+    }
+  }, []);
+
+  // Only fetch once we know the profile belongs to a farmer.
+  useEffect(() => {
+    if (profile?.role === "farmer" && profile?._id) {
+      fetchFarmerRating(profile._id);
+    }
+  }, [profile?.role, profile?._id, fetchFarmerRating]);
 
   const handleSaveProfile = async () => {
     try {
@@ -224,6 +250,21 @@ export default function ProfileScreen({ navigation }) {
             </View>
           )}
         </View>
+
+        {/* Farmer Rating Section — only shown when viewing a farmer's own profile */}
+        {profile?.role === "farmer" ? (
+          <View style={styles.section}>
+            <FarmerRatingSummary
+              averageFarmerRating={farmerRatingData?.averageFarmerRating}
+              farmerReviewCount={farmerRatingData?.farmerReviewCount}
+              reviews={farmerRatingData?.reviews?.map((r) => ({
+                ...r,
+                rating: r.overallRating,
+              }))}
+              reviewsLoading={farmerRatingLoading}
+            />
+          </View>
+        ) : null}
 
         {/* Addresses Section */}
         <View style={styles.section}>

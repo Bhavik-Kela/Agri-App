@@ -44,7 +44,7 @@ exports.getProducts = async (req, res) => {
   try {
 
     const products = await Product.find()
-      .populate("farmer", "name email phone addresses");
+      .populate("farmer", "name email phone addresses averageFarmerRating farmerReviewCount");
 
     res.json(products);
 
@@ -62,7 +62,7 @@ exports.getProductById = async (req, res) => {
   try {
 
     const product = await Product.findById(req.params.id)
-      .populate("farmer", "name email phone addresses");
+      .populate("farmer", "name email phone addresses averageFarmerRating farmerReviewCount");
 
     if (!product) {
       return res.status(404).json({

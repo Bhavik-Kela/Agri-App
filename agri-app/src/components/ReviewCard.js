@@ -5,8 +5,8 @@
  * Usage:
  *   <ReviewCard review={review} />
  */
-import React from "react";
-import { View, Text, StyleSheet } from "react-native";
+import React, { useState } from "react";
+import { View, Text, Pressable, StyleSheet } from "react-native";
 import { colors, radius, spacing, typography } from "../theme/theme";
 import StarRating from "./StarRating";
 
@@ -32,6 +32,9 @@ function getInitials(name = "") {
 }
 
 export default function ReviewCard({ review, style }) {
+  const [expanded,  setExpanded]  = useState(false);
+  const [truncated, setTruncated] = useState(false);
+
   if (!review) return null;
 
   const name    = review.buyer?.name || "Anonymous";
@@ -58,7 +61,26 @@ export default function ReviewCard({ review, style }) {
 
       {/* Comment */}
       {comment ? (
-        <Text style={styles.comment}>{comment}</Text>
+        <View>
+          <Text
+            style={styles.comment}
+            numberOfLines={expanded ? undefined : 3}
+            onTextLayout={(e) => {
+              if (!expanded && e.nativeEvent.lines.length > 3) {
+                setTruncated(true);
+              }
+            }}
+          >
+            {comment}
+          </Text>
+          {truncated ? (
+            <Pressable onPress={() => setExpanded((v) => !v)}>
+              <Text style={styles.readMore}>
+                {expanded ? "Read less" : "Read more"}
+              </Text>
+            </Pressable>
+          ) : null}
+        </View>
       ) : null}
     </View>
   );
@@ -113,5 +135,11 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: colors.textSecondary,
     lineHeight: 20,
+  },
+  readMore: {
+    fontSize: 13,
+    fontWeight: "600",
+    color: colors.textPrimary,
+    marginTop: spacing.xs,
   },
 });

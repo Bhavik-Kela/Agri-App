@@ -6,8 +6,8 @@
  * Usage:
  *   <ReviewList reviews={reviews} loading={loading} />
  */
-import React from "react";
-import { View, Text, StyleSheet } from "react-native";
+import React, { useState } from "react";
+import { View, Text, Pressable, StyleSheet } from "react-native";
 import { colors, radius, spacing, typography } from "../theme/theme";
 import ReviewCard from "./ReviewCard";
 
@@ -42,7 +42,9 @@ function EmptyReviews() {
 }
 
 /* ── Main ─────────────────────────────────────────────────────────────── */
-export default function ReviewList({ reviews = [], loading = false, style }) {
+export default function ReviewList({ reviews = [], loading = false, style, initialCount = 3 }) {
+  const [expanded, setExpanded] = useState(false);
+
   if (loading) {
     return (
       <View style={[styles.list, style]}>
@@ -57,11 +59,29 @@ export default function ReviewList({ reviews = [], loading = false, style }) {
     return <EmptyReviews />;
   }
 
+  const hasMore = reviews.length > initialCount;
+  const visibleReviews = expanded ? reviews : reviews.slice(0, initialCount);
+
   return (
     <View style={[styles.list, style]}>
-      {reviews.map((review) => (
+      {visibleReviews.map((review) => (
         <ReviewCard key={review._id} review={review} />
       ))}
+
+      {hasMore ? (
+        <Pressable
+          style={styles.toggleButton}
+          onPress={() => setExpanded((e) => !e)}
+        >
+          <Text style={styles.toggleButtonText}>
+            {expanded
+              ? "Show less"
+              : `Show ${reviews.length - initialCount} more review${
+                  reviews.length - initialCount === 1 ? "" : "s"
+                }`}
+          </Text>
+        </Pressable>
+      ) : null}
     </View>
   );
 }
@@ -69,6 +89,23 @@ export default function ReviewList({ reviews = [], loading = false, style }) {
 const styles = StyleSheet.create({
   list: {
     gap: spacing.sm,
+  },
+
+  /* Toggle */
+  toggleButton: {
+    alignItems: "center",
+    paddingVertical: spacing.sm,
+    marginTop: spacing.xs,
+    borderRadius: radius.md,
+    borderWidth: 1,
+    borderColor: colors.border,
+    backgroundColor: colors.surfaceRaised,
+  },
+  toggleButtonText: {
+    fontSize: 13,
+    fontWeight: "600",
+    color: colors.textSecondary,
+    letterSpacing: -0.1,
   },
 
   /* Skeleton */
