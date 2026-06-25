@@ -7,27 +7,54 @@
  *   <FarmerRatingSummary
  *     averageFarmerRating={4.6}
  *     farmerReviewCount={12}
+ *     averageQualityRating={4.7}
+ *     averageFreshnessRating={4.9}
+ *     averageCommunicationRating={4.5}
+ *     averageDeliveryRating={4.8}
  *     reviews={[]}         // optional — renders ReviewList when provided
  *   />
- *
- * When the GET /farmer-reviews endpoint is ready, simply fetch the data
- * in the parent screen and pass it down here.
  */
 import React from "react";
 import { View, Text, StyleSheet } from "react-native";
+import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
 import { colors, radius, spacing, typography } from "../theme/theme";
 import StarRating from "./StarRating";
-import RatingBadge from "./RatingBadge";
 import ReviewList from "./ReviewList";
+
+function CategoryIcon({ icon, size = 18, color = colors.textTertiary }) {
+  switch (icon) {
+    case "award":
+      return <Feather name="award" size={size} color={color} />;
+    case "leaf":
+      return <MaterialCommunityIcons name="leaf" size={size} color={color} />;
+    case "message-circle":
+      return <Feather name="message-circle" size={size} color={color} />;
+    case "truck":
+      return <Feather name="truck" size={size} color={color} />;
+    default:
+      return null;
+  }
+}
 
 export default function FarmerRatingSummary({
   averageFarmerRating,
   farmerReviewCount,
+  averageQualityRating,
+  averageFreshnessRating,
+  averageCommunicationRating,
+  averageDeliveryRating,
   reviews,
   reviewsLoading = false,
   style,
 }) {
   const hasRating = averageFarmerRating != null && farmerReviewCount != null;
+
+  const categoryAverages = {
+    quality: averageQualityRating,
+    freshness: averageFreshnessRating,
+    communication: averageCommunicationRating,
+    delivery: averageDeliveryRating,
+  };
 
   return (
     <View style={[styles.wrapper, style]}>
@@ -50,15 +77,37 @@ export default function FarmerRatingSummary({
               </View>
             </View>
 
-            {/* Category breakdown legend (static labels matching FarmerReview form) */}
             <View style={styles.divider} />
-            <View style={styles.categoryRow}>
-              {CATEGORIES.map((c) => (
-                <View key={c.key} style={styles.categoryCell}>
-                  <Text style={styles.categoryIcon}>{c.icon}</Text>
-                  <Text style={styles.categoryLabel}>{c.label}</Text>
-                </View>
-              ))}
+            <View style={styles.categoryList}>
+              {CATEGORIES.map((c, index) => {
+                const avg = categoryAverages[c.key];
+                return (
+                  <View
+                    key={c.key}
+                    style={[
+                      styles.categoryRow,
+                      index < CATEGORIES.length - 1 && styles.categoryRowBorder,
+                    ]}
+                  >
+                    <View style={styles.categoryLeft}>
+                      <CategoryIcon icon={c.icon} />
+                      <Text style={styles.categoryLabel}>{c.label}</Text>
+                    </View>
+                    <View style={styles.categoryRight}>
+                      {avg > 0 ? (
+                        <>
+                          <StarRating rating={avg} size={14} />
+                          <Text style={styles.categoryValue}>
+                            {Number(avg).toFixed(1)}
+                          </Text>
+                        </>
+                      ) : (
+                        <Text style={styles.categoryEmpty}>—</Text>
+                      )}
+                    </View>
+                  </View>
+                );
+              })}
             </View>
           </>
         ) : (
@@ -83,10 +132,10 @@ export default function FarmerRatingSummary({
 }
 
 const CATEGORIES = [
-  { key: "quality",       icon: "◈", label: "Quality"  },
-  { key: "freshness",     icon: "◉", label: "Freshness" },
-  { key: "communication", icon: "◌", label: "Comms"    },
-  { key: "delivery",      icon: "○", label: "Delivery"  },
+  { key: "quality",       icon: "award",           label: "Quality"       },
+  { key: "freshness",     icon: "leaf",            label: "Freshness"     },
+  { key: "communication", icon: "message-circle", label: "Communication" },
+  { key: "delivery",      icon: "truck",           label: "Delivery"      },
 ];
 
 const styles = StyleSheet.create({
@@ -133,21 +182,49 @@ const styles = StyleSheet.create({
     backgroundColor: colors.hairline,
     marginVertical: spacing.md,
   },
+  categoryList: {
+    gap: 0,
+  },
   categoryRow: {
     flexDirection: "row",
-    justifyContent: "space-between",
-  },
-  categoryCell: {
     alignItems: "center",
-    gap: 4,
+    justifyContent: "space-between",
+    paddingVertical: spacing.sm,
+    gap: spacing.sm,
   },
-  categoryIcon: {
-    fontSize: 18,
-    color: colors.textTertiary,
+  categoryRowBorder: {
+    borderBottomWidth: 1,
+    borderBottomColor: colors.hairline,
+  },
+  categoryLeft: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing.sm,
+    flex: 1,
+  },
+  categoryRight: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing.xs,
   },
   categoryLabel: {
     ...typography.label,
     color: colors.textTertiary,
+    textTransform: "none",
+    letterSpacing: -0.1,
+    fontSize: 13,
+  },
+  categoryValue: {
+    fontSize: 13,
+    fontWeight: "700",
+    color: colors.textPrimary,
+    minWidth: 28,
+    textAlign: "right",
+  },
+  categoryEmpty: {
+    fontSize: 13,
+    color: colors.textTertiary,
+    fontWeight: "500",
   },
   noRatingWrap: {
     alignItems: "center",

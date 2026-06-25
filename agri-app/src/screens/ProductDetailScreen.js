@@ -212,7 +212,27 @@ export default function ProductDetailScreen({ route, navigation }) {
         {/* Detail card */}
         <View style={styles.card}>
           {product.farmer?.name ? (
-            <DetailRow label="Sold by" value={product.farmer.name} />
+            <Pressable
+              style={({ pressed }) => [
+                styles.sellerRow,
+                pressed && farmerId && styles.sellerRowPressed,
+              ]}
+              disabled={!farmerId}
+              onPress={() =>
+                navigation.navigate("FarmerProfile", {
+                  farmerId,
+                  farmerName: product.farmer.name,
+                })
+              }
+            >
+              <Text style={styles.sellerLinkLabel}>Sold by</Text>
+              <View style={styles.sellerLinkRow}>
+                <Text style={styles.sellerName} numberOfLines={1}>
+                  {product.farmer.name}
+                </Text>
+                <Text style={styles.sellerChevron}>→</Text>
+              </View>
+            </Pressable>
           ) : null}
           <DetailRow label="Unit price" value={`₹${product.price}`} last />
         </View>
@@ -413,6 +433,37 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: "600",
     color: colors.textPrimary,
+  },
+  sellerRow: {
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.lg,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.hairline,
+  },
+  sellerRowPressed: {
+    opacity: 0.6,
+  },
+  sellerLinkLabel: {
+    ...typography.label,
+    color: colors.textTertiary,
+    marginBottom: 4,
+  },
+  sellerLinkRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: spacing.sm,
+  },
+  sellerName: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: colors.textPrimary,
+    flex: 1,
+  },
+  sellerChevron: {
+    fontSize: 14,
+    color: colors.textSecondary,
+    fontWeight: "600",
   },
 
   /* Actions */

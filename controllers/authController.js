@@ -138,7 +138,9 @@ exports.getFarmerProfile = async (req, res) => {
     const farmer = await User.findOne({
       _id: farmerId,
       role: "farmer",
-    }).select("name role profilePhoto averageFarmerRating farmerReviewCount");
+    }).select(
+      "name role profilePhoto averageFarmerRating farmerReviewCount averageQualityRating averageFreshnessRating averageCommunicationRating averageDeliveryRating"
+    );
 
     if (!farmer) {
       return res.status(404).json({

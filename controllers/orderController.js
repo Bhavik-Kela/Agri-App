@@ -2,6 +2,8 @@ const Order = require("../models/order");
 const Product = require("../models/Product");
 const Message = require("../models/Message");
 const User = require("../models/User");
+const Review = require("../models/Review");
+const FarmerReview = require("../models/FarmerReview");
 
 exports.createOrder = async (req, res) => {
   try {
@@ -70,7 +72,28 @@ exports.getMyOrders = async (req, res) => {
     .populate("product", "name price pricePerUnit unit category")
     .populate("farmer", "name email phone addresses averageFarmerRating farmerReviewCount");
 
-    res.json(orders);
+    const orderIds = orders.map((order) => order._id);
+
+    const [productReviews, farmerReviews] = await Promise.all([
+      Review.find({ order: { $in: orderIds } }).select("order"),
+      FarmerReview.find({ order: { $in: orderIds } }).select("order"),
+    ]);
+
+    const productReviewOrderIds = new Set(
+      productReviews.map((review) => review.order.toString())
+    );
+    const farmerReviewOrderIds = new Set(
+      farmerReviews.map((review) => review.order.toString())
+    );
+
+    const ordersWithReviewFlags = orders.map((order) => {
+      const orderObj = order.toObject();
+      orderObj.hasProductReview = productReviewOrderIds.has(order._id.toString());
+      orderObj.hasFarmerReview = farmerReviewOrderIds.has(order._id.toString());
+      return orderObj;
+    });
+
+    res.json(ordersWithReviewFlags);
 
   } catch (error) {
 

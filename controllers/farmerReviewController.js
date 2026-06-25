@@ -2,28 +2,51 @@ const FarmerReview = require("../models/FarmerReview");
 const Order = require("../models/order");
 const User = require("../models/User");
 
-// Update farmer rating
+// Recompute and persist all farmer rating aggregates (called on review create)
 const updateFarmerRating = async (farmerId) => {
   const reviews = await FarmerReview.find({ farmer: farmerId });
 
   const farmerReviewCount = reviews.length;
 
   let averageFarmerRating = 0;
+  let averageQualityRating = 0;
+  let averageFreshnessRating = 0;
+  let averageCommunicationRating = 0;
+  let averageDeliveryRating = 0;
 
   if (farmerReviewCount > 0) {
-    const total = reviews.reduce(
-      (sum, review) => sum + review.overallRating,
-      0
-    );
+    let totalOverall = 0;
+    let totalQuality = 0;
+    let totalFreshness = 0;
+    let totalCommunication = 0;
+    let totalDelivery = 0;
 
-    averageFarmerRating = total / farmerReviewCount;
+    for (const review of reviews) {
+      totalOverall += review.overallRating;
+      totalQuality += review.qualityRating;
+      totalFreshness += review.freshnessRating;
+      totalCommunication += review.communicationRating;
+      totalDelivery += review.deliveryRating;
+    }
+
+    averageFarmerRating = totalOverall / farmerReviewCount;
+    averageQualityRating = totalQuality / farmerReviewCount;
+    averageFreshnessRating = totalFreshness / farmerReviewCount;
+    averageCommunicationRating = totalCommunication / farmerReviewCount;
+    averageDeliveryRating = totalDelivery / farmerReviewCount;
   }
 
   await User.findByIdAndUpdate(farmerId, {
     averageFarmerRating: Number(averageFarmerRating.toFixed(1)),
+    averageQualityRating: Number(averageQualityRating.toFixed(1)),
+    averageFreshnessRating: Number(averageFreshnessRating.toFixed(1)),
+    averageCommunicationRating: Number(averageCommunicationRating.toFixed(1)),
+    averageDeliveryRating: Number(averageDeliveryRating.toFixed(1)),
     farmerReviewCount,
   });
 };
+
+exports.rebuildFarmerRatings = updateFarmerRating;
 
 // Create Farmer Review
 exports.createFarmerReview = async (req, res) => {
@@ -139,6 +162,10 @@ exports.getFarmerReviews = async (req, res) => {
 
     res.status(200).json({
       averageFarmerRating: farmer.averageFarmerRating,
+      averageQualityRating: farmer.averageQualityRating,
+      averageFreshnessRating: farmer.averageFreshnessRating,
+      averageCommunicationRating: farmer.averageCommunicationRating,
+      averageDeliveryRating: farmer.averageDeliveryRating,
       farmerReviewCount: farmer.farmerReviewCount,
       reviews
     });

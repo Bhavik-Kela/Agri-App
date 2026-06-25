@@ -170,31 +170,35 @@ function OrderCard({ item, navigation }) {
           <View style={styles.reviewDivider} />
           <Text style={styles.reviewSectionLabel}>Reviews</Text>
           <View style={styles.reviewButtons}>
-            {/* Product review */}
-            <ReviewButton
-              label={hasProductReview ? "Product Reviewed ✓" : "Write Product Review"}
-              disabled={hasProductReview}
-              onPress={() =>
-                navigation.navigate("WriteProductReview", {
-                  orderId:     item._id,
-                  productName,
-                })
-              }
-            />
+            {hasProductReview ? (
+              <Text style={styles.reviewStatus}>✓ Product Reviewed</Text>
+            ) : (
+              <ReviewButton
+                label="Write Product Review"
+                onPress={() =>
+                  navigation.navigate("WriteProductReview", {
+                    orderId:     item._id,
+                    productName,
+                  })
+                }
+              />
+            )}
 
-            {/* Farmer review */}
-            <ReviewButton
-              label={hasFarmerReview ? "Farmer Reviewed ✓" : "Review Farmer"}
-              disabled={hasFarmerReview}
-              variant="secondary"
-              onPress={() =>
-                navigation.navigate("WriteFarmerReview", {
-                  orderId:    item._id,
-                  farmerName,
-                  order:      item,
-                })
-              }
-            />
+            {hasFarmerReview ? (
+              <Text style={styles.reviewStatus}>✓ Farmer Reviewed</Text>
+            ) : (
+              <ReviewButton
+                label="Review Farmer"
+                variant="secondary"
+                onPress={() =>
+                  navigation.navigate("WriteFarmerReview", {
+                    orderId:    item._id,
+                    farmerName,
+                    order:      item,
+                  })
+                }
+              />
+            )}
           </View>
         </View>
       ) : null}
@@ -229,7 +233,7 @@ function OrderCard({ item, navigation }) {
 }
 
 /* ── ReviewButton ─────────────────────────────────────────────────────── */
-function ReviewButton({ label, onPress, disabled, variant = "primary" }) {
+function ReviewButton({ label, onPress, variant = "primary" }) {
   const isPrimary = variant === "primary";
 
   return (
@@ -237,16 +241,13 @@ function ReviewButton({ label, onPress, disabled, variant = "primary" }) {
       style={[
         styles.reviewBtn,
         isPrimary ? styles.reviewBtnPrimary : styles.reviewBtnSecondary,
-        disabled && styles.reviewBtnDisabled,
       ]}
       onPress={onPress}
-      disabled={disabled}
     >
       <Text
         style={[
           styles.reviewBtnText,
           isPrimary ? styles.reviewBtnTextPrimary : styles.reviewBtnTextSecondary,
-          disabled && styles.reviewBtnTextDisabled,
         ]}
       >
         {label}
@@ -422,6 +423,12 @@ const styles = StyleSheet.create({
   reviewButtons: {
     gap: spacing.sm,
   },
+  reviewStatus: {
+    fontSize: 13,
+    fontWeight: "600",
+    color: colors.textTertiary,
+    paddingVertical: 10,
+  },
   reviewBtn: {
     borderRadius: radius.md,
     paddingVertical: 12,
@@ -436,10 +443,6 @@ const styles = StyleSheet.create({
     backgroundColor: "transparent",
     borderColor: colors.borderStrong,
   },
-  reviewBtnDisabled: {
-    backgroundColor: colors.surfaceRaised,
-    borderColor: colors.border,
-  },
   reviewBtnText: {
     fontSize: 14,
     fontWeight: "700",
@@ -450,9 +453,6 @@ const styles = StyleSheet.create({
   },
   reviewBtnTextSecondary: {
     color: colors.textSecondary,
-  },
-  reviewBtnTextDisabled: {
-    color: colors.textTertiary,
   },
 
   /* Chat button */

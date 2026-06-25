@@ -16,6 +16,7 @@ import {
   Alert,
   Pressable,
 } from "react-native";
+import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
 import { SafeAreaView } from "react-native-safe-area-context";
 import API from "../../../services/api";
 import ScreenHeader from "../../components/ScreenHeader";
@@ -23,29 +24,44 @@ import GradientButton from "../../components/GradientButton";
 import InteractiveStarRating from "../../components/InteractiveStarRating";
 import { colors, radius, spacing, typography } from "../../theme/theme";
 
+function CategoryIcon({ icon, size = 20, color = colors.textTertiary }) {
+  switch (icon) {
+    case "award":
+      return <Feather name="award" size={size} color={color} />;
+    case "leaf":
+      return <MaterialCommunityIcons name="leaf" size={size} color={color} />;
+    case "message-circle":
+      return <Feather name="message-circle" size={size} color={color} />;
+    case "truck":
+      return <Feather name="truck" size={size} color={color} />;
+    default:
+      return null;
+  }
+}
+
 const CATEGORIES = [
   {
     key:         "qualityRating",
     label:       "Quality",
-    icon:        "◈",
+    icon:        "award",
     description: "How good was the product quality?",
   },
   {
     key:         "freshnessRating",
     label:       "Freshness",
-    icon:        "◉",
+    icon:        "leaf",
     description: "How fresh was the produce?",
   },
   {
     key:         "communicationRating",
     label:       "Communication",
-    icon:        "◌",
+    icon:        "message-circle",
     description: "How responsive was the farmer?",
   },
   {
     key:         "deliveryRating",
     label:       "Delivery",
-    icon:        "○",
+    icon:        "truck",
     description: "How smooth was order fulfilment?",
   },
 ];
@@ -188,7 +204,7 @@ export default function WriteFarmerReviewScreen({ route, navigation }) {
             >
               {/* Left: icon + labels */}
               <View style={styles.categoryLeft}>
-                <Text style={styles.categoryIcon}>{icon}</Text>
+                <CategoryIcon icon={icon} />
                 <View style={styles.categoryTexts}>
                   <Text style={styles.categoryLabel}>{label}</Text>
                   <Text style={styles.categoryDesc}>{description}</Text>
@@ -244,7 +260,7 @@ export default function WriteFarmerReviewScreen({ route, navigation }) {
             <View style={styles.previewRow}>
               {CATEGORIES.map(({ key, icon }) => (
                 <View key={key} style={styles.previewCell}>
-                  <Text style={styles.previewIcon}>{icon}</Text>
+                  <CategoryIcon icon={icon} size={16} />
                   <Text style={styles.previewValue}>
                     {ratings[key] ? `${ratings[key]}★` : "—"}
                   </Text>
@@ -334,12 +350,6 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
     flex: 1,
   },
-  categoryIcon: {
-    fontSize: 20,
-    color: colors.textTertiary,
-    width: 26,
-    textAlign: "center",
-  },
   categoryTexts: {
     gap: 2,
     flex: 1,
@@ -412,10 +422,6 @@ const styles = StyleSheet.create({
   previewCell: {
     alignItems: "center",
     gap: 4,
-  },
-  previewIcon: {
-    fontSize: 16,
-    color: colors.textTertiary,
   },
   previewValue: {
     fontSize: 13,

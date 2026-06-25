@@ -50,14 +50,34 @@ const userSchema = new mongoose.Schema(
         default: ""
     },
     averageFarmerRating: {
-    type: Number,
-    default: 0
-},
+        type: Number,
+        default: 0
+    },
 
-farmerReviewCount: {
-    type: Number,
-    default: 0
-}
+    averageQualityRating: {
+        type: Number,
+        default: 0
+    },
+
+    averageFreshnessRating: {
+        type: Number,
+        default: 0
+    },
+
+    averageCommunicationRating: {
+        type: Number,
+        default: 0
+    },
+
+    averageDeliveryRating: {
+        type: Number,
+        default: 0
+    },
+
+    farmerReviewCount: {
+        type: Number,
+        default: 0
+    }
 },
 {
     timestamps: true

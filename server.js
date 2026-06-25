@@ -23,7 +23,24 @@ app.use(express.json());
 app.use("/uploads", express.static(uploadsDir));
 
 mongoose.connect(process.env.MONGO_URI)
-  .then(() => console.log("MongoDB Connected"))
+  .then(async () => {
+    console.log("MongoDB Connected");
+
+    // Backfill stored category averages for farmers with existing reviews
+    try {
+      const FarmerReview = require("./models/FarmerReview");
+      const { rebuildFarmerRatings } = require("./controllers/farmerReviewController");
+      const farmerIds = await FarmerReview.distinct("farmer");
+      for (const farmerId of farmerIds) {
+        await rebuildFarmerRatings(farmerId);
+      }
+      if (farmerIds.length) {
+        console.log(`Synced category ratings for ${farmerIds.length} farmer(s)`);
+      }
+    } catch (err) {
+      console.log("Farmer rating backfill skipped:", err.message);
+    }
+  })
   .catch(err => console.log(err));
 
 app.use(

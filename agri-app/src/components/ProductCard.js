@@ -1,6 +1,6 @@
 import React from "react";
 import { View, Text, Pressable, StyleSheet, Image } from "react-native";
-import { mono, radius, spacing, colors } from "../theme/theme";
+import { radius, spacing, colors } from "../theme/theme";
 
 const SERVER_ORIGIN = "http://10.148.186.109:5000";
 
@@ -42,18 +42,41 @@ export default function ProductCard({ product, onPress, onFarmerPress, footer })
       </View>
 
       <View style={styles.info}>
-        <Text style={styles.name} numberOfLines={1}>
-          {product?.name}
-        </Text>
-        {product?.otherProductName && (
-          <Text style={styles.otherName}>{product.otherProductName}</Text>
-        )}
+        <View style={styles.infoHeader}>
+          <View style={styles.infoMain}>
+            <Text style={styles.name} numberOfLines={1}>
+              {product?.name}
+            </Text>
+            {product?.otherProductName && (
+              <Text style={styles.otherName}>{product.otherProductName}</Text>
+            )}
+          </View>
+
+          {farmerName && onFarmerPress ? (
+            <Pressable
+              onPress={onFarmerPress}
+              style={({ pressed }) => [
+                styles.farmerLink,
+                pressed && styles.farmerLinkPressed,
+              ]}
+            >
+              <Text style={styles.farmerLinkLabel}>Sold by</Text>
+              <View style={styles.farmerLinkRow}>
+                <Text style={styles.farmerLinkName} numberOfLines={1}>
+                  {farmerName}
+                </Text>
+                <Text style={styles.farmerChevron}>→</Text>
+              </View>
+            </Pressable>
+          ) : null}
+        </View>
+
         <Text style={styles.category}>{product?.category}</Text>
         <View style={styles.metaRow}>
           <Text style={styles.price}>{displayPrice}</Text>
           <Text style={styles.dot}>·</Text>
           <Text style={styles.quantity}>
-            {product?.quantity} {product?.unit || 'units'}
+            {product?.quantity} {product?.unit || "units"}
           </Text>
         </View>
         {product?.averageRating ? (
@@ -67,33 +90,6 @@ export default function ProductCard({ product, onPress, onFarmerPress, footer })
               {product.reviewCount === 1 ? "review" : "reviews"}
             </Text>
           </View>
-        ) : null}
-
-        {farmerName ? (
-          <Pressable
-            onPress={onFarmerPress}
-            disabled={!onFarmerPress}
-            style={({ pressed }) => [
-              styles.farmerRow,
-              pressed && onFarmerPress && styles.farmerRowPressed,
-            ]}
-          >
-            <Text style={styles.farmerName} numberOfLines={1}>
-              Sold by {farmerName}
-            </Text>
-            {product?.farmer?.averageFarmerRating ? (
-              <View style={styles.farmerRatingRow}>
-                <Text style={styles.farmerRatingStar}>★</Text>
-                <Text style={styles.farmerRatingValue}>
-                  {Number(product.farmer.averageFarmerRating).toFixed(1)}
-                </Text>
-                <Text style={styles.farmerRatingLabel}>
-                  farmer rating · {product.farmer.farmerReviewCount}{" "}
-                  {product.farmer.farmerReviewCount === 1 ? "review" : "reviews"}
-                </Text>
-              </View>
-            ) : null}
-          </Pressable>
         ) : null}
       </View>
 
@@ -142,6 +138,16 @@ const styles = StyleSheet.create({
   info: {
     flex: 1,
   },
+  infoHeader: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    justifyContent: "space-between",
+    gap: spacing.sm,
+  },
+  infoMain: {
+    flex: 1,
+    minWidth: 0,
+  },
   name: {
     fontSize: 16,
     fontWeight: "700",
@@ -152,6 +158,44 @@ const styles = StyleSheet.create({
     color: colors.inkSoft,
     marginTop: 2,
     fontStyle: "italic",
+  },
+  farmerLink: {
+    alignItems: "flex-end",
+    maxWidth: "46%",
+    paddingLeft: spacing.xs,
+    paddingVertical: 2,
+    borderRadius: radius.sm,
+    borderWidth: 1,
+    borderColor: colors.hairline,
+    backgroundColor: colors.chipBg,
+    paddingHorizontal: spacing.sm,
+  },
+  farmerLinkPressed: {
+    opacity: 0.6,
+  },
+  farmerLinkLabel: {
+    fontSize: 9,
+    fontWeight: "700",
+    letterSpacing: 0.8,
+    textTransform: "uppercase",
+    color: colors.inkSoft,
+  },
+  farmerLinkRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 3,
+    marginTop: 2,
+  },
+  farmerLinkName: {
+    fontSize: 12,
+    fontWeight: "700",
+    color: colors.ink,
+    flexShrink: 1,
+  },
+  farmerChevron: {
+    fontSize: 12,
+    color: colors.inkSoft,
+    fontWeight: "600",
   },
   category: {
     fontSize: 11,
@@ -186,40 +230,6 @@ const styles = StyleSheet.create({
     color: colors.inkSoft,
     marginLeft: 2,
   },
-  farmerRow: {
-    marginTop: spacing.sm,
-    paddingTop: spacing.sm,
-    borderTopWidth: 1,
-    borderTopColor: colors.faint,
-  },
-  farmerRowPressed: {
-    opacity: 0.6,
-  },
-  farmerName: {
-    fontSize: 13,
-    fontWeight: "600",
-    color: colors.ink,
-  },
-  farmerRatingRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginTop: 2,
-    gap: 3,
-  },
-  farmerRatingStar: {
-    fontSize: 11,
-    color: "#D4A017",
-  },
-  farmerRatingValue: {
-    fontSize: 11,
-    fontWeight: "700",
-    color: colors.inkSoft,
-  },
-  farmerRatingLabel: {
-    fontSize: 11,
-    color: colors.inkSoft,
-    marginLeft: 2,
-  },
   price: {
     fontSize: 15,
     fontWeight: "800",
@@ -231,7 +241,8 @@ const styles = StyleSheet.create({
   },
   quantity: {
     fontSize: 13,
-    color: colors.inkSoft},
+    color: colors.inkSoft,
+  },
   footer: {
     marginLeft: spacing.sm,
   },

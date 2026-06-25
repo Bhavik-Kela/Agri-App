@@ -257,6 +257,10 @@ export default function ProfileScreen({ navigation }) {
             <FarmerRatingSummary
               averageFarmerRating={farmerRatingData?.averageFarmerRating}
               farmerReviewCount={farmerRatingData?.farmerReviewCount}
+              averageQualityRating={farmerRatingData?.averageQualityRating}
+              averageFreshnessRating={farmerRatingData?.averageFreshnessRating}
+              averageCommunicationRating={farmerRatingData?.averageCommunicationRating}
+              averageDeliveryRating={farmerRatingData?.averageDeliveryRating}
               reviews={farmerRatingData?.reviews?.map((r) => ({
                 ...r,
                 rating: r.overallRating,
