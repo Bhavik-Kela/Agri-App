@@ -1,3 +1,10 @@
+/**
+ * BuyerOrdersScreen (updated)
+ * Changes from original:
+ *   - Completed orders show "Write Product Review" + "Review Farmer" buttons
+ *   - Buttons are disabled/greyed if the order already has a review
+ *   - All original behaviour (chat, address, status badges) is preserved
+ */
 import React, { useCallback, useState } from "react";
 import { Alert, FlatList, StyleSheet, Text, View, Pressable } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -17,8 +24,8 @@ const STATUS_META = {
 
 export default function BuyerOrdersScreen() {
   const navigation = useNavigation();
-  const [orders, setOrders] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [orders,     setOrders]     = useState([]);
+  const [loading,    setLoading]    = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
   const fetchOrders = useCallback(async () => {
@@ -73,75 +80,151 @@ export default function BuyerOrdersScreen() {
             subtitle="Your purchased items will appear here once you place an order."
           />
         }
-        renderItem={({ item }) => {
-          const meta = STATUS_META[item?.status] || STATUS_META.pending;
-          const sellerAddress = item?.farmer?.addresses?.find((a) => a.isDefault);
-          const canChat = item?.status === "accepted" || item?.status === "completed";
-
-          return (
-            <View style={styles.card}>
-              {/* Card header */}
-              <View style={styles.cardHeader}>
-                <Text style={styles.productName} numberOfLines={1}>
-                  {item?.product?.name || "Product"}
-                </Text>
-                <View style={styles.statusBadge}>
-                  <View style={[styles.statusDot, { backgroundColor: meta.dot }]} />
-                  <Text style={styles.statusText}>{meta.label}</Text>
-                </View>
-              </View>
-
-              {/* Divider */}
-              <View style={styles.divider} />
-
-              {/* Info rows */}
-              <View style={styles.infoGrid}>
-                <InfoCell label="Quantity" value={`${item?.quantity || 0} units`} />
-                <InfoCell label="Total" value={`₹${item?.totalPrice || 0}`} />
-              </View>
-
-              {/* Seller address when accepted */}
-              {item?.status === "accepted" && sellerAddress ? (
-                <View style={styles.addressBlock}>
-                  <Text style={styles.addressLabel}>Pickup address</Text>
-                  <Text style={styles.addressLine}>{sellerAddress.street}</Text>
-                  <Text style={styles.addressLine}>
-                    {sellerAddress.city}, {sellerAddress.state} {sellerAddress.zipCode}
-                  </Text>
-                </View>
-              ) : null}
-
-              {/* Chat button */}
-              {canChat ? (
-                <Pressable
-                  style={[
-                    styles.chatButton,
-                    item.status === "completed" && styles.chatButtonMuted,
-                  ]}
-                  onPress={() =>
-                    navigation.navigate("Chat", {
-                      orderId: item._id,
-                      status: item.status,
-                    })
-                  }
-                >
-                  <Text style={[
-                    styles.chatButtonText,
-                    item.status === "completed" && styles.chatButtonTextMuted,
-                  ]}>
-                    {item.status === "completed" ? "View Chat" : "Message Seller"}
-                  </Text>
-                  <Text style={styles.chatArrow}>→</Text>
-                </Pressable>
-              ) : null}
-            </View>
-          );
-        }}
+        renderItem={({ item }) => <OrderCard item={item} navigation={navigation} />}
       />
     </SafeAreaView>
   );
 }
 
+/* ─────────────────────────────────────────────────────────────────────── */
+/*  OrderCard — extracted to avoid creating functions inside renderItem    */
+/* ─────────────────────────────────────────────────────────────────────── */
+function OrderCard({ item, navigation }) {
+  const meta           = STATUS_META[item?.status] || STATUS_META.pending;
+  const isCompleted    = item?.status === "completed";
+  const canChat        = item?.status === "accepted" || isCompleted;
+  const sellerAddress  = item?.farmer?.addresses?.find((a) => a.isDefault);
+
+  // Backend may return hasProductReview / hasFarmerReview booleans
+  // If not present yet, default to false so buttons are always shown
+  const hasProductReview = item?.hasProductReview ?? false;
+  const hasFarmerReview  = item?.hasFarmerReview  ?? false;
+
+  const productName = item?.product?.name || "Product";
+  const farmerName  = item?.farmer?.name  || "Farmer";
+
+  return (
+    <View style={styles.card}>
+      {/* Card header */}
+      <View style={styles.cardHeader}>
+        <Text style={styles.productName} numberOfLines={1}>{productName}</Text>
+        <View style={styles.statusBadge}>
+          <View style={[styles.statusDot, { backgroundColor: meta.dot }]} />
+          <Text style={styles.statusText}>{meta.label}</Text>
+        </View>
+      </View>
+
+      {/* Divider */}
+      <View style={styles.divider} />
+
+      {/* Info rows */}
+      <View style={styles.infoGrid}>
+        <InfoCell label="Quantity" value={`${item?.quantity || 0} units`} />
+        <InfoCell label="Total"    value={`₹${item?.totalPrice || 0}`}    />
+      </View>
+
+      {/* Seller address when accepted */}
+      {item?.status === "accepted" && sellerAddress ? (
+        <View style={styles.addressBlock}>
+          <Text style={styles.addressLabel}>Pickup address</Text>
+          <Text style={styles.addressLine}>{sellerAddress.street}</Text>
+          <Text style={styles.addressLine}>
+            {sellerAddress.city}, {sellerAddress.state} {sellerAddress.zipCode}
+          </Text>
+        </View>
+      ) : null}
+
+      {/* Review buttons — only for completed orders */}
+      {isCompleted ? (
+        <View style={styles.reviewSection}>
+          <View style={styles.reviewDivider} />
+          <Text style={styles.reviewSectionLabel}>Reviews</Text>
+          <View style={styles.reviewButtons}>
+            {/* Product review */}
+            <ReviewButton
+              label={hasProductReview ? "Product Reviewed ✓" : "Write Product Review"}
+              disabled={hasProductReview}
+              onPress={() =>
+                navigation.navigate("WriteProductReview", {
+                  orderId:     item._id,
+                  productName,
+                })
+              }
+            />
+
+            {/* Farmer review */}
+            <ReviewButton
+              label={hasFarmerReview ? "Farmer Reviewed ✓" : "Review Farmer"}
+              disabled={hasFarmerReview}
+              variant="secondary"
+              onPress={() =>
+                navigation.navigate("WriteFarmerReview", {
+                  orderId:    item._id,
+                  farmerName,
+                })
+              }
+            />
+          </View>
+        </View>
+      ) : null}
+
+      {/* Chat button */}
+      {canChat ? (
+        <Pressable
+          style={[
+            styles.chatButton,
+            isCompleted && styles.chatButtonMuted,
+          ]}
+          onPress={() =>
+            navigation.navigate("Chat", {
+              orderId: item._id,
+              status:  item.status,
+            })
+          }
+        >
+          <Text
+            style={[
+              styles.chatButtonText,
+              isCompleted && styles.chatButtonTextMuted,
+            ]}
+          >
+            {isCompleted ? "View Chat" : "Message Seller"}
+          </Text>
+          <Text style={styles.chatArrow}>→</Text>
+        </Pressable>
+      ) : null}
+    </View>
+  );
+}
+
+/* ── ReviewButton ─────────────────────────────────────────────────────── */
+function ReviewButton({ label, onPress, disabled, variant = "primary" }) {
+  const isPrimary = variant === "primary";
+
+  return (
+    <Pressable
+      style={[
+        styles.reviewBtn,
+        isPrimary ? styles.reviewBtnPrimary : styles.reviewBtnSecondary,
+        disabled && styles.reviewBtnDisabled,
+      ]}
+      onPress={onPress}
+      disabled={disabled}
+    >
+      <Text
+        style={[
+          styles.reviewBtnText,
+          isPrimary ? styles.reviewBtnTextPrimary : styles.reviewBtnTextSecondary,
+          disabled && styles.reviewBtnTextDisabled,
+        ]}
+      >
+        {label}
+      </Text>
+    </Pressable>
+  );
+}
+
+/* ── InfoCell ─────────────────────────────────────────────────────────── */
 function InfoCell({ label, value }) {
   return (
     <View style={styles.infoCell}>
@@ -151,6 +234,7 @@ function InfoCell({ label, value }) {
   );
 }
 
+/* ── Styles ───────────────────────────────────────────────────────────── */
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
@@ -161,7 +245,7 @@ const styles = StyleSheet.create({
     flexGrow: 1,
   },
 
-  // Card
+  /* Card */
   card: {
     backgroundColor: colors.surface,
     borderRadius: radius.lg,
@@ -212,7 +296,7 @@ const styles = StyleSheet.create({
     marginHorizontal: spacing.lg,
   },
 
-  // Info grid
+  /* Info grid */
   infoGrid: {
     flexDirection: "row",
     padding: spacing.lg,
@@ -234,7 +318,7 @@ const styles = StyleSheet.create({
     letterSpacing: -0.2,
   },
 
-  // Address block
+  /* Address block */
   addressBlock: {
     marginHorizontal: spacing.lg,
     marginBottom: spacing.md,
@@ -255,7 +339,58 @@ const styles = StyleSheet.create({
     lineHeight: 18,
   },
 
-  // Chat button
+  /* Review section */
+  reviewSection: {
+    paddingHorizontal: spacing.lg,
+    paddingBottom: spacing.sm,
+  },
+  reviewDivider: {
+    height: 1,
+    backgroundColor: colors.hairline,
+    marginBottom: spacing.md,
+  },
+  reviewSectionLabel: {
+    ...typography.label,
+    color: colors.textTertiary,
+    marginBottom: spacing.sm,
+  },
+  reviewButtons: {
+    gap: spacing.sm,
+  },
+  reviewBtn: {
+    borderRadius: radius.md,
+    paddingVertical: 12,
+    alignItems: "center",
+    borderWidth: 1,
+  },
+  reviewBtnPrimary: {
+    backgroundColor: colors.white,
+    borderColor: colors.white,
+  },
+  reviewBtnSecondary: {
+    backgroundColor: "transparent",
+    borderColor: colors.borderStrong,
+  },
+  reviewBtnDisabled: {
+    backgroundColor: colors.surfaceRaised,
+    borderColor: colors.border,
+  },
+  reviewBtnText: {
+    fontSize: 14,
+    fontWeight: "700",
+    letterSpacing: -0.1,
+  },
+  reviewBtnTextPrimary: {
+    color: colors.black,
+  },
+  reviewBtnTextSecondary: {
+    color: colors.textSecondary,
+  },
+  reviewBtnTextDisabled: {
+    color: colors.textTertiary,
+  },
+
+  /* Chat button */
   chatButton: {
     flexDirection: "row",
     alignItems: "center",

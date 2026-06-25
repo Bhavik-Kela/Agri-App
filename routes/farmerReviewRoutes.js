@@ -12,4 +12,10 @@ router.post(
   farmerReviewController.createFarmerReview
 );
 
+// Get all reviews for a farmer
+router.get(
+  "/:farmerId",
+  farmerReviewController.getFarmerReviews
+);
+
 module.exports = router;

@@ -117,3 +117,37 @@ exports.createFarmerReview = async (req, res) => {
     });
   }
 };
+
+// Get Farmer Reviews
+exports.getFarmerReviews = async (req, res) => {
+  try {
+    const { farmerId } = req.params;
+
+    const farmer = await User.findById(farmerId);
+
+    if (!farmer) {
+      return res.status(404).json({
+        message: "Farmer not found."
+      });
+    }
+
+    const reviews = await FarmerReview.find({
+      farmer: farmerId
+    })
+      .populate("buyer", "name")
+      .sort({ createdAt: -1 });
+
+    res.status(200).json({
+      averageFarmerRating: farmer.averageFarmerRating,
+      farmerReviewCount: farmer.farmerReviewCount,
+      reviews
+    });
+
+  } catch (error) {
+    console.error(error);
+
+    res.status(500).json({
+      message: "Server Error"
+    });
+  }
+};

@@ -1,51 +1,56 @@
+/**
+ * BuyerTabs (updated)
+ * Changes from original:
+ *   - OrdersStack gains WriteProductReview + WriteFarmerReview screens
+ *   - MarketplaceStack unchanged (reviews reached from Orders tab only)
+ *   - All other tabs and behaviour preserved exactly
+ */
 import React from "react";
 import { Text } from "react-native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 
-import MarketplaceScreen from "../src/screens/buyer/MarketplaceScreen";
-import BuyerOrdersScreen from "../src/screens/buyer/BuyerOrdersScreen";
-import ProductDetailScreen from "../src/screens/ProductDetailScreen";
-import ChatScreen from "../src/screens/ChatScreen";
-import ProfileScreen from "../src/screens/ProfileScreen";
-import { colors } from "../src/theme/theme";
+import MarketplaceScreen         from "../src/screens/buyer/MarketplaceScreen";
+import BuyerOrdersScreen         from "../src/screens/buyer/BuyerOrdersScreen";
+import WriteProductReviewScreen  from "../src/screens/buyer/WriteProductReviewScreen";
+import WriteFarmerReviewScreen   from "../src/screens/buyer/WriteFarmerReviewScreen";
+import ProductDetailScreen       from "../src/screens/ProductDetailScreen";
+import ChatScreen                from "../src/screens/ChatScreen";
+import ProfileScreen             from "../src/screens/ProfileScreen";
+import { colors }                from "../src/theme/theme";
 
+/* ── MarketplaceStack ─────────────────────────────────────────────────── */
 const MarketplaceStack = createNativeStackNavigator();
 function MarketplaceStackScreen() {
   return (
     <MarketplaceStack.Navigator screenOptions={{ headerShown: false }}>
-      <MarketplaceStack.Screen name="Marketplace" component={MarketplaceScreen} />
-      <MarketplaceStack.Screen
-        name="ProductDetail"
-        component={ProductDetailScreen}
-      />
-      <MarketplaceStack.Screen
-        name="Chat"
-        component={ChatScreen}
-      />
+      <MarketplaceStack.Screen name="Marketplace"   component={MarketplaceScreen}   />
+      <MarketplaceStack.Screen name="ProductDetail" component={ProductDetailScreen} />
+      <MarketplaceStack.Screen name="Chat"          component={ChatScreen}          />
     </MarketplaceStack.Navigator>
   );
 }
 
+/* ── OrdersStack ──────────────────────────────────────────────────────── */
 const OrdersStack = createNativeStackNavigator();
 function OrdersStackScreen() {
   return (
     <OrdersStack.Navigator screenOptions={{ headerShown: false }}>
-      <OrdersStack.Screen name="Orders" component={BuyerOrdersScreen} />
-      <OrdersStack.Screen
-        name="Chat"
-        component={ChatScreen}
-      />
+      <OrdersStack.Screen name="Orders"               component={BuyerOrdersScreen}        />
+      <OrdersStack.Screen name="WriteProductReview"   component={WriteProductReviewScreen} />
+      <OrdersStack.Screen name="WriteFarmerReview"    component={WriteFarmerReviewScreen}  />
+      <OrdersStack.Screen name="Chat"                 component={ChatScreen}               />
     </OrdersStack.Navigator>
   );
 }
 
+/* ── Tab navigator ────────────────────────────────────────────────────── */
 const Tab = createBottomTabNavigator();
 
 const TAB_ICONS = {
   MarketplaceTab: "🛒",
-  OrdersTab: "📦",
-  ProfileTab: "👤",
+  OrdersTab:      "📦",
+  ProfileTab:     "👤",
 };
 
 export default function BuyerTabs() {
@@ -53,7 +58,7 @@ export default function BuyerTabs() {
     <Tab.Navigator
       screenOptions={({ route }) => ({
         headerShown: false,
-        tabBarActiveTintColor: colors.forest,
+        tabBarActiveTintColor:   colors.forest,
         tabBarInactiveTintColor: colors.textSecondary,
         tabBarIcon: () => (
           <Text style={{ fontSize: 18 }}>{TAB_ICONS[route.name]}</Text>

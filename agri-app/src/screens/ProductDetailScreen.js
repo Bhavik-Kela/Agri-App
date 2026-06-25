@@ -1,3 +1,11 @@
+/**
+ * ProductDetailScreen (updated)
+ * Changes from original:
+ *   - Fetches GET /api/reviews/product/:productId on mount
+ *   - Shows RatingBadge in the stats row
+ *   - Renders a ReviewList section at the bottom of the ScrollView
+ *   - All original behaviour (order, edit, delete) is preserved exactly
+ */
 import React, { useCallback, useState } from "react";
 import {
   View,
@@ -16,6 +24,8 @@ import { useAuth } from "../context/AuthContext";
 import ScreenHeader from "../components/ScreenHeader";
 import GradientButton from "../components/GradientButton";
 import LoadingSpinner from "../components/LoadingSpinner";
+import RatingBadge from "../components/RatingBadge";
+import ReviewList from "../components/ReviewList";
 import { colors, radius, spacing, typography } from "../theme/theme";
 
 const SERVER_ORIGIN = "http://10.148.186.109:5000";
@@ -37,12 +47,18 @@ const CATEGORY_ICONS = {
 export default function ProductDetailScreen({ route, navigation }) {
   const { productId } = route.params || {};
   const { user } = useAuth();
-  const [product, setProduct] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [deleting, setDeleting] = useState(false);
-  const [placingOrder, setPlacingOrder] = useState(false);
-  const [quantity, setQuantity] = useState("1");
 
+  const [product,        setProduct]        = useState(null);
+  const [loading,        setLoading]        = useState(true);
+  const [deleting,       setDeleting]       = useState(false);
+  const [placingOrder,   setPlacingOrder]   = useState(false);
+  const [quantity,       setQuantity]       = useState("1");
+
+  // ── Review state ──────────────────────────────────────────────────────
+  const [reviewData,     setReviewData]     = useState(null);   // { averageRating, reviewCount, reviews }
+  const [reviewsLoading, setReviewsLoading] = useState(false);
+
+  /* ── Fetchers ─────────────────────────────────────────────────────── */
   const fetchProduct = useCallback(async () => {
     try {
       const res = await API.get(`/products/${productId}`);
@@ -53,16 +69,29 @@ export default function ProductDetailScreen({ route, navigation }) {
     }
   }, [productId]);
 
+  const fetchReviews = useCallback(async () => {
+    setReviewsLoading(true);
+    try {
+      const res = await API.get(`/reviews/product/${productId}`);
+      setReviewData(res.data);
+    } catch (err) {
+      // Reviews failing silently — not critical to product display
+      console.log("Reviews fetch error:", err?.response?.data);
+    } finally {
+      setReviewsLoading(false);
+    }
+  }, [productId]);
+
   useFocusEffect(
     useCallback(() => {
       let active = true;
       (async () => {
         if (active) setLoading(true);
-        await fetchProduct();
+        await Promise.all([fetchProduct(), fetchReviews()]);
         if (active) setLoading(false);
       })();
       return () => { active = false; };
-    }, [fetchProduct])
+    }, [fetchProduct, fetchReviews])
   );
 
   if (loading || !product) {
@@ -70,9 +99,15 @@ export default function ProductDetailScreen({ route, navigation }) {
   }
 
   const farmerId = product.farmer?._id || product.farmer;
-  const isOwner = user?.role === "farmer" && farmerId === user?.id;
-  const icon = CATEGORY_ICONS[product.category] || CATEGORY_ICONS.Other;
+  const isOwner  = user?.role === "farmer" && farmerId === user?.id;
+  const icon     = CATEGORY_ICONS[product.category] || CATEGORY_ICONS.Other;
 
+  // Prefer live review data, fall back to values embedded in product model
+  const averageRating = reviewData?.averageRating ?? product.averageRating;
+  const reviewCount   = reviewData?.reviewCount   ?? product.reviewCount;
+  const reviews       = reviewData?.reviews       ?? [];
+
+  /* ── Handlers ─────────────────────────────────────────────────────── */
   const handleDelete = () => {
     Alert.alert(
       "Delete product",
@@ -123,11 +158,15 @@ export default function ProductDetailScreen({ route, navigation }) {
     }
   };
 
+  /* ── Render ───────────────────────────────────────────────────────── */
   return (
     <SafeAreaView style={styles.safeArea} edges={["top", "bottom"]}>
       <ScreenHeader eyebrow={product.category} title={product.name} />
 
-      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        contentContainerStyle={styles.content}
+        showsVerticalScrollIndicator={false}
+      >
         {/* Hero image / icon */}
         <View style={styles.heroWrap}>
           {product?.photo ? (
@@ -141,6 +180,13 @@ export default function ProductDetailScreen({ route, navigation }) {
               <Text style={styles.iconLabel}>{product.category}</Text>
             </View>
           )}
+
+          {/* Rating badge overlaid on hero */}
+          {averageRating > 0 ? (
+            <View style={styles.ratingOverlay}>
+              <RatingBadge rating={averageRating} count={reviewCount} />
+            </View>
+          ) : null}
         </View>
 
         {/* Stats row */}
@@ -156,8 +202,10 @@ export default function ProductDetailScreen({ route, navigation }) {
           </View>
           <View style={styles.statDivider} />
           <View style={styles.statCell}>
-            <Text style={styles.statValue}>{product.category}</Text>
-            <Text style={styles.statLabel}>category</Text>
+            <Text style={styles.statValue}>
+              {averageRating ? Number(averageRating).toFixed(1) : "—"}
+            </Text>
+            <Text style={styles.statLabel}>rating</Text>
           </View>
         </View>
 
@@ -195,7 +243,9 @@ export default function ProductDetailScreen({ route, navigation }) {
               <View style={styles.quantityControls}>
                 <Pressable
                   style={styles.qtyBtn}
-                  onPress={() => setQuantity(String(Math.max(1, Number(quantity) - 1)))}
+                  onPress={() =>
+                    setQuantity(String(Math.max(1, Number(quantity) - 1)))
+                  }
                 >
                   <Text style={styles.qtyBtnText}>−</Text>
                 </Pressable>
@@ -223,11 +273,28 @@ export default function ProductDetailScreen({ route, navigation }) {
             />
           </View>
         )}
+
+        {/* ── Reviews section ──────────────────────────────────────────── */}
+        <View style={styles.reviewsSection}>
+          {/* Section header */}
+          <View style={styles.reviewsHeader}>
+            <Text style={styles.reviewsTitle}>Customer Reviews</Text>
+            {reviewCount > 0 ? (
+              <RatingBadge rating={averageRating} count={reviewCount} />
+            ) : null}
+          </View>
+
+          <ReviewList
+            reviews={reviews}
+            loading={reviewsLoading}
+          />
+        </View>
       </ScrollView>
     </SafeAreaView>
   );
 }
 
+/* ── Sub-components ─────────────────────────────────────────────────── */
 function DetailRow({ label, value, last }) {
   return (
     <View style={[styles.detailRow, !last && styles.detailRowBorder]}>
@@ -237,6 +304,7 @@ function DetailRow({ label, value, last }) {
   );
 }
 
+/* ── Styles ─────────────────────────────────────────────────────────── */
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
@@ -247,7 +315,7 @@ const styles = StyleSheet.create({
     paddingBottom: spacing.xxl,
   },
 
-  // Hero
+  /* Hero */
   heroWrap: {
     borderRadius: radius.xl,
     overflow: "hidden",
@@ -276,8 +344,13 @@ const styles = StyleSheet.create({
     ...typography.label,
     color: colors.textTertiary,
   },
+  ratingOverlay: {
+    position: "absolute",
+    bottom: spacing.sm,
+    right: spacing.sm,
+  },
 
-  // Stats
+  /* Stats */
   statsRow: {
     flexDirection: "row",
     backgroundColor: colors.surface,
@@ -312,7 +385,7 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
 
-  // Card
+  /* Card */
   card: {
     backgroundColor: colors.surface,
     borderRadius: radius.lg,
@@ -342,9 +415,10 @@ const styles = StyleSheet.create({
     color: colors.textPrimary,
   },
 
-  // Actions
+  /* Actions */
   actions: {
     gap: spacing.sm,
+    marginBottom: spacing.lg,
   },
   actionButton: {
     width: "100%",
@@ -362,7 +436,7 @@ const styles = StyleSheet.create({
     color: colors.error,
   },
 
-  // Quantity
+  /* Quantity */
   quantityRow: {
     flexDirection: "row",
     alignItems: "center",
@@ -406,5 +480,22 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "700",
     color: colors.textPrimary,
+  },
+
+  /* Reviews section */
+  reviewsSection: {
+    gap: spacing.md,
+    marginTop: spacing.xs,
+  },
+  reviewsHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+  reviewsTitle: {
+    fontSize: 16,
+    fontWeight: "700",
+    color: colors.textPrimary,
+    letterSpacing: -0.3,
   },
 });
