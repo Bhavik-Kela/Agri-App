@@ -48,7 +48,16 @@ const userSchema = new mongoose.Schema(
     profilePhoto: {
         type: String,
         default: ""
-    }
+    },
+    averageFarmerRating: {
+    type: Number,
+    default: 0
+},
+
+farmerReviewCount: {
+    type: Number,
+    default: 0
+}
 },
 {
     timestamps: true

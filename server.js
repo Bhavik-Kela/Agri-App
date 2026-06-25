@@ -8,6 +8,8 @@ const fs = require("fs");
 const productRoutes = require("./routes/productRoutes");
 const authRoutes = require("./routes/authRoutes");
 const orderRoutes = require("./routes/orderRoutes");
+const reviewRoutes = require("./routes/reviewRoutes");
+const farmerReviewRoutes = require("./routes/farmerReviewRoutes");
 
 const app = express();
 
@@ -42,6 +44,16 @@ app.use(
 app.use(
   "/api/orders",
   orderRoutes
+);
+
+app.use(
+  "/api/reviews",
+  reviewRoutes
+);
+
+app.use(
+  "/api/farmer-reviews",
+  farmerReviewRoutes
 );
 
 
