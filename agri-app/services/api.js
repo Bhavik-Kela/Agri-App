@@ -2,7 +2,7 @@ import axios from "axios";
 import { loadSession } from "../src/services/authStorage";
 
 const API = axios.create({
-  baseURL: "http://10.148.186.109:5000/api",
+  baseURL: "http://10.121.163.109:5000/api",
 });
 
 let currentToken = null;

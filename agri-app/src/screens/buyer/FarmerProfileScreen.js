@@ -26,7 +26,7 @@ import RatingBadge from "../../components/RatingBadge";
 import EmptyState from "../../components/EmptyState";
 import { colors, radius, spacing, typography } from "../../theme/theme";
 
-const SERVER_ORIGIN = "http://10.148.186.109:5000";
+const SERVER_ORIGIN = "http://10.121.163.109:5000";
 
 function resolveImageUri(photo) {
   if (!photo) return null;

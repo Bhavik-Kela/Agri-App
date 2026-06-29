@@ -19,6 +19,7 @@ import ProductDetailScreen       from "../src/screens/ProductDetailScreen";
 import ChatScreen                from "../src/screens/ChatScreen";
 import ProfileScreen             from "../src/screens/ProfileScreen";
 import { colors }                from "../src/theme/theme";
+import NotificationsScreen from "../src/screens/NotificationsScreen";
 
 /* ── MarketplaceStack ─────────────────────────────────────────────────── */
 const MarketplaceStack = createNativeStackNavigator();
@@ -29,6 +30,7 @@ function MarketplaceStackScreen() {
       <MarketplaceStack.Screen name="ProductDetail" component={ProductDetailScreen} />
       <MarketplaceStack.Screen name="FarmerProfile" component={FarmerProfileScreen} />
       <MarketplaceStack.Screen name="Chat"          component={ChatScreen}          />
+      <MarketplaceStack.Screen name="Notifications" component={NotificationsScreen} />
     </MarketplaceStack.Navigator>
   );
 }
@@ -43,6 +45,7 @@ function OrdersStackScreen() {
       <OrdersStack.Screen name="WriteFarmerReview"    component={WriteFarmerReviewScreen}  />
       <OrdersStack.Screen name="FarmerProfile"        component={FarmerProfileScreen}      />
       <OrdersStack.Screen name="Chat"                 component={ChatScreen}               />
+      <OrdersStack.Screen name="Notifications"        component={NotificationsScreen}      />
     </OrdersStack.Navigator>
   );
 }

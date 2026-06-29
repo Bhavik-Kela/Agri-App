@@ -4,6 +4,7 @@ const Message = require("../models/Message");
 const User = require("../models/User");
 const Review = require("../models/Review");
 const FarmerReview = require("../models/FarmerReview");
+const { createNotification } = require("../services/notificationService");
 
 exports.createOrder = async (req, res) => {
   try {
@@ -47,12 +48,22 @@ exports.createOrder = async (req, res) => {
 
     const totalPrice = product.price * qty;
 
-    const order = await Order.create({
+      const order = await Order.create({
       buyer: req.user.id,
       farmer: product.farmer,
       product: product._id,
       quantity: qty,
       totalPrice,
+    });
+
+    await createNotification(req.app.get("io"), {
+      recipient: product.farmer,
+      sender: req.user.id,
+      type: "NEW_ORDER",
+      title: "New order received",
+      message: `You have a new order for ${product.name}.`,
+      order: order._id,
+      product: product._id,
     });
 
     res.status(201).json(order);
@@ -195,6 +206,21 @@ exports.updateOrderStatus = async (req, res) => {
     order.status = status;
 
     await order.save();
+
+    if (status === "accepted" || status === "rejected") {
+      await createNotification(req.app.get("io"), {
+        recipient: order.buyer,
+        sender: req.user.id,
+        type: status === "accepted" ? "ORDER_ACCEPTED" : "ORDER_REJECTED",
+        title: status === "accepted" ? "Order accepted" : "Order rejected",
+        message:
+          status === "accepted"
+            ? "Your order has been accepted by the farmer."
+            : "Your order was rejected by the farmer.",
+        order: order._id,
+        product: order.product,
+      });
+    }
 
     res.json(order);
 

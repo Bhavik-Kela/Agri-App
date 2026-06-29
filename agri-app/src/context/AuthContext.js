@@ -9,6 +9,8 @@ import React, {
 import API, { setApiAuthToken } from "../../services/api";
 import { saveSession, loadSession, clearSession } from "../services/authStorage";
 
+import { connectSocket, disconnectSocket } from "../services/socketService";
+
 const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
@@ -25,6 +27,7 @@ export function AuthProvider({ children }) {
           setApiAuthToken(storedToken);
           setToken(storedToken);
           setUser(storedUser);
+          connectSocket(storedToken);
         }
       } finally {
         setBootstrapping(false);
@@ -40,6 +43,8 @@ export function AuthProvider({ children }) {
       setApiAuthToken(newToken);
       setToken(newToken);
       setUser(newUser);
+      connectSocket(newToken);
+
     }
     return res.data;
   }, []);
@@ -61,6 +66,7 @@ export function AuthProvider({ children }) {
       console.log("Error clearing session:", err);
     }
     setApiAuthToken(null);
+    disconnectSocket();
     setToken(null);
     setUser(null);
   }, []);

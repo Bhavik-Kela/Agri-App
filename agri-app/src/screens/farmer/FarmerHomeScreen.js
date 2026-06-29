@@ -10,6 +10,7 @@ import GradientButton from "../../components/GradientButton";
 import LoadingSpinner from "../../components/LoadingSpinner";
 import EmptyState from "../../components/EmptyState";
 import { colors, radius, spacing, typography } from "../../theme/theme";
+import NotificationBell from "../../components/NotificationBell";
 
 export default function FarmerHomeScreen({ navigation }) {
   const { user } = useAuth();
@@ -55,14 +56,17 @@ export default function FarmerHomeScreen({ navigation }) {
   return (
     <SafeAreaView style={styles.safeArea} edges={["top", "bottom"]}>
       {/* Custom header — richer than ScreenHeader for the home screen */}
-      <View style={styles.header}>
+  <View style={styles.header}>
         <View>
           <Text style={styles.eyebrow}>Good day</Text>
           <Text style={styles.headerTitle}>{firstName}</Text>
         </View>
-        <View style={styles.statBadge}>
-          <Text style={styles.statNumber}>{products.length}</Text>
-          <Text style={styles.statUnit}>listings</Text>
+        <View style={styles.headerActions}>
+          <NotificationBell />
+          <View style={styles.statBadge}>
+            <Text style={styles.statNumber}>{products.length}</Text>
+            <Text style={styles.statUnit}>listings</Text>
+          </View>
         </View>
       </View>
 
@@ -166,6 +170,12 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.border,
   },
+  headerActions: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing.sm,
+  },
+  
   statNumber: {
     fontSize: 20,
     fontWeight: "700",

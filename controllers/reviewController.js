@@ -2,6 +2,8 @@ const Review = require("../models/Review");
 const Order = require("../models/order");
 const Product = require("../models/Product");
 
+const { createNotification } = require("../services/notificationService");
+
 const updateProductRating = async (productId) => {
   const reviews = await Review.find({ product: productId });
 
@@ -78,7 +80,7 @@ exports.createReview = async (req, res) => {
     }
 
     // Create review
-    const review = await Review.create({
+   const review = await Review.create({
       order: order._id,
       buyer: order.buyer,
       farmer: order.farmer,
@@ -87,6 +89,16 @@ exports.createReview = async (req, res) => {
       comment
     });
     await updateProductRating(order.product);
+
+    await createNotification(req.app.get("io"), {
+      recipient: order.farmer,
+      sender: req.user.id,
+      type: "PRODUCT_REVIEW",
+      title: "New product review",
+      message: `A buyer left a ${rating}-star review on your product.`,
+      order: order._id,
+      product: order.product,
+    });
 
     res.status(201).json({
       message: "Review added successfully.",

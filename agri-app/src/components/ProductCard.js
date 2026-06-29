@@ -2,7 +2,7 @@ import React from "react";
 import { View, Text, Pressable, StyleSheet, Image } from "react-native";
 import { radius, spacing, colors } from "../theme/theme";
 
-const SERVER_ORIGIN = "http://10.148.186.109:5000";
+const SERVER_ORIGIN = "http://10.121.163.109:5000";
 
 function resolveImageUri(photo) {
   if (!photo) return null;

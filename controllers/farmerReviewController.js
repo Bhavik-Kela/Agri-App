@@ -1,6 +1,7 @@
 const FarmerReview = require("../models/FarmerReview");
 const Order = require("../models/order");
 const User = require("../models/User");
+const { createNotification } = require("../services/notificationService");
 
 // Recompute and persist all farmer rating aggregates (called on review create)
 const updateFarmerRating = async (farmerId) => {
@@ -125,12 +126,22 @@ exports.createFarmerReview = async (req, res) => {
       comment,
     });
 
-    await updateFarmerRating(order.farmer);
+   await updateFarmerRating(order.farmer);
+
+    await createNotification(req.app.get("io"), {
+      recipient: order.farmer,
+      sender: req.user.id,
+      type: "FARMER_REVIEW",
+      title: "New farmer review",
+      message: `A buyer left a ${overallRating}-star review on your farmer profile.`,
+      order: order._id,
+    });
 
     res.status(201).json({
       message: "Farmer review added successfully.",
       review,
     });
+
 
   } catch (error) {
     console.error(error);

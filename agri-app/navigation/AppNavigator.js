@@ -11,6 +11,9 @@ import LoadingSpinner from "../src/components/LoadingSpinner";
 import ChatScreen from "../src/screens/ChatScreen";
 import ProfileScreen from "../src/screens/ProfileScreen";
 import { AuthProvider, useAuth } from "../src/context/AuthContext";
+import { NotificationProvider } from "../src/context/NotificationContext"; 
+import NotificationToast from "../src/components/NotificationToast";
+
 
 const Stack = createNativeStackNavigator();
 
@@ -53,10 +56,14 @@ function RootSwitch() {
 
 export default function AppNavigator() {
   return (
-    <AuthProvider>
-      <NavigationContainer>
-        <RootSwitch />
-      </NavigationContainer>
-    </AuthProvider>
+  <AuthProvider>
+  <NotificationProvider>
+    <NavigationContainer>
+      <RootSwitch />
+    </NavigationContainer>
+    <NotificationToast />
+  </NotificationProvider>
+</AuthProvider>
+
   );
 }

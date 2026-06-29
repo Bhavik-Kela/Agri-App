@@ -2,6 +2,10 @@ const mongoose = require("mongoose");
 
 const messageSchema = new mongoose.Schema(
   {
+    readAt: {
+  type: Date,
+  default: null,
+},
     order: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Order",

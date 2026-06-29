@@ -2,6 +2,13 @@ import React from "react";
 import { View, Text, StyleSheet } from "react-native";
 import { mono, spacing } from "../theme/theme";
 import { colors } from "../theme/theme";
+import NotificationBell from "../components/NotificationBell";
+
+<ScreenHeader
+  eyebrow="..."
+  title="..."
+  right={<NotificationBell />}
+/>
 
 export default function ScreenHeader({ eyebrow, title, subtitle, right }) {
   return (

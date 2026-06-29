@@ -12,6 +12,7 @@ import ProductDetailScreen from "../src/screens/ProductDetailScreen";
 import ChatScreen from "../src/screens/ChatScreen";
 import ProfileScreen from "../src/screens/ProfileScreen";
 import { colors } from "../src/theme/theme";
+import NotificationsScreen from "../src/screens/NotificationsScreen";
 
 // Each tab gets its OWN stack with the SAME inner route names
 // ("ProductDetail", "EditProduct", "MyProducts", "AddProduct").
@@ -29,6 +30,8 @@ function HomeStackScreen() {
       <HomeStack.Screen name="MyProducts" component={MyProductsScreen} />
       <HomeStack.Screen name="ProductDetail" component={ProductDetailScreen} />
       <HomeStack.Screen name="EditProduct" component={EditProductScreen} />
+      <HomeStack.Screen name="Chat" component={ChatScreen} />
+      <HomeStack.Screen name="Notifications" component={NotificationsScreen} />
     </HomeStack.Navigator>
   );
 }
@@ -41,6 +44,8 @@ function AddProductStackScreen() {
       <AddStack.Screen name="MyProducts" component={MyProductsScreen} />
       <AddStack.Screen name="ProductDetail" component={ProductDetailScreen} />
       <AddStack.Screen name="EditProduct" component={EditProductScreen} />
+      <AddStack.Screen name="Chat" component={ChatScreen} />
+      <AddStack.Screen name="Notifications" component={NotificationsScreen} />
     </AddStack.Navigator>
   );
 }
@@ -56,16 +61,18 @@ function MyProductsStackScreen() {
         component={ProductDetailScreen}
       />
       <MyProductsStack.Screen name="EditProduct" component={EditProductScreen} />
+      <MyProductsStack.Screen name="Chat" component={ChatScreen} />
+      <MyProductsStack.Screen name="Notifications" component={NotificationsScreen} />
     </MyProductsStack.Navigator>
   );
 }
-
 const OrdersStack = createNativeStackNavigator();
 function OrdersStackScreen() {
   return (
     <OrdersStack.Navigator screenOptions={{ headerShown: false }}>
       <OrdersStack.Screen name="Orders" component={FarmerOrdersScreen} />
       <OrdersStack.Screen name="Chat" component={ChatScreen} />
+      <OrdersStack.Screen name="Notifications" component={NotificationsScreen} />
     </OrdersStack.Navigator>
   );
 }

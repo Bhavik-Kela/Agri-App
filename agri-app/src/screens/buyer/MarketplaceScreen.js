@@ -19,6 +19,7 @@ import LoadingSpinner from "../../components/LoadingSpinner";
 import EmptyState from "../../components/EmptyState";
 import { spacing } from "../../theme/theme";
 import { colors } from "../../theme/theme";
+import NotificationBell from "../../components/NotificationBell";
 
 // ---------------------------------------------------------------------------
 // INTENTIONAL LOCAL OVERRIDE — read before touching this file.
@@ -234,12 +235,15 @@ export default function MarketplaceScreen({ navigation }) {
             <Text style={styles.eyebrow}>FRESH FROM THE FARM</Text>
             <Text style={styles.headerTitle}>Marketplace</Text>
           </View>
-          <Pressable
-            onPress={openSortSheet}
-            style={({ pressed }) => [styles.sortButton, pressed && styles.sortButtonPressed]}
-          >
-            <Text style={styles.sortButtonIcon}>{activeSortOption.icon}</Text>
-          </Pressable>
+          <View style={styles.headerActions}>
+            <NotificationBell />
+            <Pressable
+              onPress={openSortSheet}
+              style={({ pressed }) => [styles.sortButton, pressed && styles.sortButtonPressed]}
+            >
+              <Text style={styles.sortButtonIcon}>{activeSortOption.icon}</Text>
+            </Pressable>
+          </View>
         </View>
         <View style={styles.countRow}>
           <View style={styles.countDot} />
@@ -420,6 +424,12 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "flex-start",
     justifyContent: "space-between",
+  },
+  headerActions: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing.sm,
+    marginTop: 4, // matches sortButton's existing marginTop, keeps both aligned
   },
   headerTextWrap: {
     flex: 1,
