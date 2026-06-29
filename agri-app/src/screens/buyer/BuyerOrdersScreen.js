@@ -5,7 +5,7 @@
  *   - Buttons are disabled/greyed if the order already has a review
  *   - All original behaviour (chat, address, status badges) is preserved
  */
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useMemo, useState } from "react";
 import { Alert, FlatList, StyleSheet, Text, View, Pressable } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useFocusEffect, useNavigation } from "@react-navigation/native";
@@ -23,11 +23,50 @@ const STATUS_META = {
   completed: { label: "Completed", dot: "#6080C8" },
 };
 
+const DATE_FILTERS = [
+  { key: "all", label: "All", days: null },
+  { key: "today", label: "Today", days: 1 },
+  { key: "7d", label: "7 days", days: 7 },
+  { key: "30d", label: "30 days", days: 30 },
+];
+
+function getOrderTime(order) {
+  return new Date(order?.createdAt || 0).getTime();
+}
+
+function getFilteredOrdersByDate(orders, filterKey) {
+  const filter = DATE_FILTERS.find((item) => item.key === filterKey) || DATE_FILTERS[0];
+  const sorted = [...orders].sort((a, b) => getOrderTime(b) - getOrderTime(a));
+
+  if (!filter.days) return sorted;
+
+  const start = new Date();
+  if (filter.key === "today") {
+    start.setHours(0, 0, 0, 0);
+  } else {
+    start.setDate(start.getDate() - (filter.days - 1));
+    start.setHours(0, 0, 0, 0);
+  }
+
+  return sorted.filter((order) => getOrderTime(order) >= start.getTime());
+}
+
+function formatOrderDate(dateString) {
+  if (!dateString) return "Date unavailable";
+
+  return new Date(dateString).toLocaleDateString("en-IN", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  });
+}
+
 export default function BuyerOrdersScreen() {
   const navigation = useNavigation();
   const [orders,     setOrders]     = useState([]);
   const [loading,    setLoading]    = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [selectedDateFilter, setSelectedDateFilter] = useState("all");
 
   const fetchOrders = useCallback(async () => {
     try {
@@ -57,6 +96,11 @@ export default function BuyerOrdersScreen() {
     setRefreshing(false);
   };
 
+  const filteredOrders = useMemo(
+    () => getFilteredOrdersByDate(orders, selectedDateFilter),
+    [orders, selectedDateFilter]
+  );
+
   if (loading) return <LoadingSpinner label="Loading your orders..." />;
 
   return (
@@ -64,11 +108,16 @@ export default function BuyerOrdersScreen() {
       <ScreenHeader
         eyebrow="Your purchases"
         title="My Orders"
-        subtitle={`${orders.length} order${orders.length === 1 ? "" : "s"}`}
+        subtitle={`${filteredOrders.length} of ${orders.length} order${orders.length === 1 ? "" : "s"}`}
+      />
+
+      <DateFilterBar
+        selectedDateFilter={selectedDateFilter}
+        onSelect={setSelectedDateFilter}
       />
 
       <FlatList
-        data={orders}
+        data={filteredOrders}
         keyExtractor={(item) => item._id}
         contentContainerStyle={styles.listContent}
         refreshing={refreshing}
@@ -77,8 +126,12 @@ export default function BuyerOrdersScreen() {
         ListEmptyComponent={
           <EmptyState
             icon="◻"
-            title="No orders yet"
-            subtitle="Your purchased items will appear here once you place an order."
+            title={orders.length ? "No orders in this date range" : "No orders yet"}
+            subtitle={
+              orders.length
+                ? "Try a wider date filter to see older purchases."
+                : "Your purchased items will appear here once you place an order."
+            }
           />
         }
         renderItem={({ item }) => <OrderCard item={item} navigation={navigation} />}
@@ -90,6 +143,27 @@ export default function BuyerOrdersScreen() {
 /* ─────────────────────────────────────────────────────────────────────── */
 /*  OrderCard — extracted to avoid creating functions inside renderItem    */
 /* ─────────────────────────────────────────────────────────────────────── */
+function DateFilterBar({ selectedDateFilter, onSelect }) {
+  return (
+    <View style={styles.filterBar}>
+      {DATE_FILTERS.map((filter) => {
+        const active = selectedDateFilter === filter.key;
+        return (
+          <Pressable
+            key={filter.key}
+            onPress={() => onSelect(filter.key)}
+            style={[styles.filterChip, active && styles.filterChipActive]}
+          >
+            <Text style={[styles.filterChipText, active && styles.filterChipTextActive]}>
+              {filter.label}
+            </Text>
+          </Pressable>
+        );
+      })}
+    </View>
+  );
+}
+
 function OrderCard({ item, navigation }) {
   const meta           = STATUS_META[item?.status] || STATUS_META.pending;
   const isCompleted    = item?.status === "completed";
@@ -108,7 +182,10 @@ function OrderCard({ item, navigation }) {
     <View style={styles.card}>
       {/* Card header */}
       <View style={styles.cardHeader}>
-        <Text style={styles.productName} numberOfLines={1}>{productName}</Text>
+        <View style={styles.cardHeaderLeft}>
+          <Text style={styles.productName} numberOfLines={1}>{productName}</Text>
+          <Text style={styles.dateText}>Placed {formatOrderDate(item?.createdAt)}</Text>
+        </View>
         <View style={styles.statusBadge}>
           <View style={[styles.statusDot, { backgroundColor: meta.dot }]} />
           <Text style={styles.statusText}>{meta.label}</Text>
@@ -277,6 +354,33 @@ const styles = StyleSheet.create({
     flexGrow: 1,
   },
 
+  filterBar: {
+    flexDirection: "row",
+    gap: spacing.sm,
+    paddingHorizontal: spacing.lg,
+    paddingBottom: spacing.md,
+  },
+  filterChip: {
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+    borderRadius: radius.pill,
+    borderWidth: 1,
+    borderColor: colors.border,
+    backgroundColor: colors.surface,
+  },
+  filterChipActive: {
+    backgroundColor: colors.white,
+    borderColor: colors.white,
+  },
+  filterChipText: {
+    fontSize: 12,
+    fontWeight: "700",
+    color: colors.textSecondary,
+  },
+  filterChipTextActive: {
+    color: colors.black,
+  },
+
   /* Card */
   card: {
     backgroundColor: colors.surface,
@@ -293,12 +397,20 @@ const styles = StyleSheet.create({
     padding: spacing.lg,
     paddingBottom: spacing.md,
   },
+  cardHeaderLeft: {
+    flex: 1,
+    paddingRight: spacing.sm,
+  },
   productName: {
     fontSize: 16,
     fontWeight: "700",
     color: colors.textPrimary,
-    flex: 1,
     letterSpacing: -0.3,
+  },
+  dateText: {
+    fontSize: 11,
+    color: colors.textTertiary,
+    marginTop: 4,
   },
   statusBadge: {
     flexDirection: "row",

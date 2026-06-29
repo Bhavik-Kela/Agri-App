@@ -61,7 +61,7 @@ export default function ChatScreen({ route }) {
 
     // Only show double tick if a message I sent already has readAt
     // AND that readAt was set AFTER the message was created
-    // (meaning someone else actually read it, not just us marking our own)
+
     const uid = user?.id;
     const alreadyRead = fetched.some(
       (m) =>

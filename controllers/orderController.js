@@ -80,6 +80,7 @@ exports.getMyOrders = async (req, res) => {
     const orders = await Order.find({
       buyer: req.user.id
     })
+    .sort({ createdAt: -1 })
     .populate("product", "name price pricePerUnit unit category")
     .populate("farmer", "name email phone addresses averageFarmerRating farmerReviewCount");
 
@@ -121,6 +122,7 @@ exports.getFarmerOrders = async (req, res) => {
     const orders = await Order.find({
       farmer: req.user.id
     })
+    .sort({ createdAt: -1 })
     .populate("buyer", "name email")
     .populate("product", "name price pricePerUnit unit category");
 

@@ -101,6 +101,36 @@ exports.markAllAsRead = async (req, res) => {
   }
 };
 
+// Delete Multiple Notifications
+// DELETE /api/notifications/delete-bulk
+exports.deleteNotifications = async (req, res) => {
+  try {
+    const ids = Array.isArray(req.body?.ids) ? req.body.ids : [];
+    const validIds = ids.filter((id) => mongoose.Types.ObjectId.isValid(id));
+
+    if (validIds.length === 0) {
+      return res.status(400).json({
+        message: "At least one valid notification id is required",
+      });
+    }
+
+    const result = await Notification.deleteMany({
+      _id: { $in: validIds },
+      recipient: req.user.id, // ownership check
+    });
+
+    res.json({
+      message: "Notifications deleted successfully",
+      deletedCount: result.deletedCount || 0,
+    });
+
+  } catch (error) {
+    res.status(500).json({
+      message: error.message
+    });
+  }
+};
+
 // Delete Notification
 // DELETE /api/notifications/:id
 exports.deleteNotification = async (req, res) => {

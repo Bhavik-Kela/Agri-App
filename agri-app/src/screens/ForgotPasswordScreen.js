@@ -1,3 +1,6 @@
+//LOGIC NOT IMPLEMENTED YET
+// ONLY FALSE LOGIC
+
 import React, { useState } from "react";
 import { Text, Pressable, Alert } from "react-native";
 import API from "../../services/api";

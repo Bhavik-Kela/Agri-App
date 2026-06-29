@@ -105,18 +105,33 @@ function navigateForNotification(navigation, notification) {
   }
 }
 
-function NotificationCard({ notification, onPress }) {
+function NotificationCard({
+  notification,
+  onPress,
+  onLongPress,
+  isSelected,
+  selectionMode,
+}) {
   const isUnread = !notification.isRead;
 
   return (
     <Pressable
       onPress={() => onPress(notification)}
+      onLongPress={() => onLongPress(notification)}
+      delayLongPress={350}
       style={({ pressed }) => [
         styles.card,
         isUnread && styles.cardUnread,
+        isSelected && styles.cardSelected,
         pressed && styles.cardPressed,
       ]}
     >
+      {selectionMode && (
+        <View style={[styles.selectCircle, isSelected && styles.selectCircleActive]}>
+          {isSelected && <Text style={styles.selectCheck}>✓</Text>}
+        </View>
+      )}
+
       <View style={styles.iconWrap}>
         <Text style={styles.iconText}>{TYPE_ICONS[notification.type] || "◉"}</Text>
       </View>
@@ -134,7 +149,7 @@ function NotificationCard({ notification, onPress }) {
         </Text>
       </View>
 
-      {isUnread && <View style={styles.unreadDot} />}
+      {!selectionMode && isUnread && <View style={styles.unreadDot} />}
     </Pressable>
   );
 }
@@ -146,6 +161,7 @@ export default function NotificationsScreen({ navigation }) {
     fetchNotifications,
     markAsRead,
     markAllAsRead,
+    deleteNotifications,
   } = useNotifications();
 
   const [refreshing, setRefreshing] = useState(false);
@@ -153,6 +169,11 @@ export default function NotificationsScreen({ navigation }) {
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(false);
   const [initialLoad, setInitialLoad] = useState(true);
+  const [selectedIds, setSelectedIds] = useState(() => new Set());
+  const [deleting, setDeleting] = useState(false);
+
+  const selectedCount = selectedIds.size;
+  const selectionMode = selectedCount > 0;
 
   // Re-fetch page 1 every time this screen gains focus — keeps the list
   // honest if notifications arrived while the user was elsewhere, since
@@ -176,6 +197,7 @@ export default function NotificationsScreen({ navigation }) {
   );
 
   const onRefresh = async () => {
+    setSelectedIds(new Set());
     setRefreshing(true);
     const res = await fetchNotifications(1);
     setPage(1);
@@ -193,14 +215,57 @@ export default function NotificationsScreen({ navigation }) {
     setLoadingMore(false);
   };
 
+  const toggleSelected = useCallback((notificationId) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(notificationId)) {
+        next.delete(notificationId);
+      } else {
+        next.add(notificationId);
+      }
+      return next;
+    });
+  }, []);
+
   const handlePress = useCallback(
     (notification) => {
+      if (selectionMode) {
+        toggleSelected(notification._id);
+        return;
+      }
+
       if (!notification.isRead) {
         markAsRead(notification._id);
       }
       navigateForNotification(navigation, notification);
     },
-    [navigation, markAsRead]
+    [navigation, markAsRead, selectionMode, toggleSelected]
+  );
+
+  const handleLongPress = useCallback(
+    (notification) => {
+      toggleSelected(notification._id);
+    },
+    [toggleSelected]
+  );
+
+  const handleCancelSelection = useCallback(() => {
+    setSelectedIds(new Set());
+  }, []);
+
+  const handleDeleteSelected = useCallback(
+    async () => {
+      if (selectedIds.size === 0 || deleting) return;
+
+      setDeleting(true);
+      const ok = await deleteNotifications(Array.from(selectedIds));
+      setDeleting(false);
+
+      if (ok) {
+        setSelectedIds(new Set());
+      }
+    },
+    [deleteNotifications, deleting, selectedIds]
   );
 
   const hasUnread = notifications.some((n) => !n.isRead);
@@ -213,9 +278,13 @@ export default function NotificationsScreen({ navigation }) {
     <SafeAreaView style={styles.safeArea} edges={["top", "bottom"]}>
       <ScreenHeader
         eyebrow="Inbox"
-        title="Notifications"
+        title={selectionMode ? `${selectedCount} selected` : "Notifications"}
         right={
-          hasUnread ? (
+          selectionMode ? (
+            <Pressable onPress={handleCancelSelection} style={styles.markAllButton}>
+              <Text style={styles.markAllText}>Cancel</Text>
+            </Pressable>
+          ) : hasUnread ? (
             <Pressable onPress={markAllAsRead} style={styles.markAllButton}>
               <Text style={styles.markAllText}>Mark all read</Text>
             </Pressable>
@@ -226,7 +295,10 @@ export default function NotificationsScreen({ navigation }) {
       <FlatList
         data={notifications}
         keyExtractor={(item) => item._id}
-        contentContainerStyle={styles.listContent}
+        contentContainerStyle={[
+          styles.listContent,
+          selectionMode && styles.listContentSelecting,
+        ]}
         showsVerticalScrollIndicator={false}
         refreshControl={
           <RefreshControl
@@ -253,9 +325,39 @@ export default function NotificationsScreen({ navigation }) {
           ) : null
         }
         renderItem={({ item }) => (
-          <NotificationCard notification={item} onPress={handlePress} />
+          <NotificationCard
+            notification={item}
+            onPress={handlePress}
+            onLongPress={handleLongPress}
+            isSelected={selectedIds.has(item._id)}
+            selectionMode={selectionMode}
+          />
         )}
       />
+
+      {selectionMode && (
+        <View style={styles.selectionBar}>
+          <View>
+            <Text style={styles.selectionTitle}>
+              {selectedCount} notification{selectedCount === 1 ? "" : "s"} selected
+            </Text>
+            <Text style={styles.selectionHint}>Tap more cards to add or remove</Text>
+          </View>
+
+          <Pressable
+            onPress={handleDeleteSelected}
+            disabled={deleting}
+            style={({ pressed }) => [
+              styles.deleteButton,
+              (pressed || deleting) && styles.deleteButtonPressed,
+            ]}
+          >
+            <Text style={styles.deleteButtonText}>
+              {deleting ? "Deleting..." : "Delete"}
+            </Text>
+          </Pressable>
+        </View>
+      )}
     </SafeAreaView>
   );
 }
@@ -282,6 +384,9 @@ const styles = StyleSheet.create({
     paddingBottom: spacing.xxl,
     flexGrow: 1,
   },
+  listContentSelecting: {
+    paddingBottom: 112,
+  },
 
   card: {
     flexDirection: "row",
@@ -299,8 +404,33 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surfaceRaised,
     borderColor: colors.borderStrong,
   },
+  cardSelected: {
+    backgroundColor: colors.surfaceRaised,
+    borderColor: colors.accentMuted,
+  },
   cardPressed: {
     opacity: 0.7,
+  },
+
+  selectCircle: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: colors.borderStrong,
+    backgroundColor: colors.surfaceSunken,
+    alignItems: "center",
+    justifyContent: "center",
+    marginTop: 6,
+  },
+  selectCircleActive: {
+    backgroundColor: colors.accent,
+    borderColor: colors.accent,
+  },
+  selectCheck: {
+    fontSize: 14,
+    fontWeight: "800",
+    color: colors.textInverse,
   },
 
   iconWrap: {
@@ -356,5 +486,47 @@ const styles = StyleSheet.create({
 
   footerSpinner: {
     paddingVertical: spacing.lg,
+  },
+
+  selectionBar: {
+    position: "absolute",
+    left: spacing.md,
+    right: spacing.md,
+    bottom: spacing.md,
+    minHeight: 72,
+    borderRadius: radius.lg,
+    borderWidth: 1,
+    borderColor: colors.borderStrong,
+    backgroundColor: colors.surfaceRaised,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: spacing.md,
+  },
+  selectionTitle: {
+    fontSize: 14,
+    fontWeight: "700",
+    color: colors.textPrimary,
+  },
+  selectionHint: {
+    marginTop: 2,
+    fontSize: 12,
+    color: colors.textTertiary,
+  },
+  deleteButton: {
+    borderRadius: radius.pill,
+    backgroundColor: colors.danger,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+  },
+  deleteButtonPressed: {
+    opacity: 0.75,
+  },
+  deleteButtonText: {
+    fontSize: 13,
+    fontWeight: "700",
+    color: colors.white,
   },
 });

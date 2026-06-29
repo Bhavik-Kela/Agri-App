@@ -79,6 +79,29 @@ export function NotificationProvider({ children }) {
     }
   }, []);
 
+  const deleteNotifications = useCallback(async (notificationIds) => {
+    const ids = Array.isArray(notificationIds) ? notificationIds : [];
+    if (ids.length === 0) return false;
+
+    try {
+      await API.delete("/notifications/delete-bulk", { data: { ids } });
+      const idSet = new Set(ids);
+      const unreadRemoved = notifications
+        .filter((n) => idSet.has(n._id) && !n.isRead)
+        .reduce((sum, n) => sum + (n.count || 1), 0);
+
+      setNotifications((prev) => prev.filter((n) => !idSet.has(n._id)));
+      if (unreadRemoved > 0) {
+        setUnreadCount((count) => Math.max(count - unreadRemoved, 0));
+      }
+
+      return true;
+    } catch (err) {
+      console.log("deleteNotifications error:", err?.response?.data || err.message);
+      return false;
+    }
+  }, [notifications]);
+
   const clearToast = useCallback(() => setToast(null), []);
 
   // ── Reset on logout ──────────────────────────────────────────────────
@@ -137,6 +160,7 @@ export function NotificationProvider({ children }) {
       fetchUnreadCount,
       markAsRead,
       markAllAsRead,
+      deleteNotifications,
       clearToast,
     }),
     [
@@ -148,6 +172,7 @@ export function NotificationProvider({ children }) {
       fetchUnreadCount,
       markAsRead,
       markAllAsRead,
+      deleteNotifications,
       clearToast,
     ]
   );

@@ -17,12 +17,39 @@ const STATUS_DOT = {
 
 const TABS = ["pending", "accepted", "completed", "rejected"];
 
+const DATE_FILTERS = [
+  { key: "all", label: "All", days: null },
+  { key: "today", label: "Today", days: 1 },
+  { key: "7d", label: "7 days", days: 7 },
+  { key: "30d", label: "30 days", days: 30 },
+];
+
+function getOrderTime(order) {
+  return new Date(order?.createdAt || 0).getTime();
+}
+
+function matchesDateFilter(order, filterKey) {
+  const filter = DATE_FILTERS.find((item) => item.key === filterKey) || DATE_FILTERS[0];
+  if (!filter.days) return true;
+
+  const start = new Date();
+  if (filter.key === "today") {
+    start.setHours(0, 0, 0, 0);
+  } else {
+    start.setDate(start.getDate() - (filter.days - 1));
+    start.setHours(0, 0, 0, 0);
+  }
+
+  return getOrderTime(order) >= start.getTime();
+}
+
 export default function FarmerOrdersScreen({ navigation }) {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [updatingId, setUpdatingId] = useState(null);
   const [selectedTab, setSelectedTab] = useState("pending");
+  const [selectedDateFilter, setSelectedDateFilter] = useState("all");
 
   const fetchOrders = useCallback(async () => {
     try {
@@ -49,8 +76,9 @@ export default function FarmerOrdersScreen({ navigation }) {
   const filteredOrders = useMemo(() => {
     return orders
       .filter((o) => o.status === selectedTab)
-      .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-  }, [orders, selectedTab]);
+      .filter((o) => matchesDateFilter(o, selectedDateFilter))
+      .sort((a, b) => getOrderTime(b) - getOrderTime(a));
+  }, [orders, selectedTab, selectedDateFilter]);
 
   const onRefresh = async () => {
     setRefreshing(true);
@@ -132,6 +160,11 @@ export default function FarmerOrdersScreen({ navigation }) {
         })}
       </View>
 
+      <DateFilterBar
+        selectedDateFilter={selectedDateFilter}
+        onSelect={setSelectedDateFilter}
+      />
+
       <FlatList
         data={filteredOrders}
         keyExtractor={(item) => item._id}
@@ -143,7 +176,11 @@ export default function FarmerOrdersScreen({ navigation }) {
           <EmptyState
             icon="◻"
             title={`No ${selectedTab} orders`}
-            subtitle={`${selectedTab.charAt(0).toUpperCase() + selectedTab.slice(1)} orders appear here.`}
+            subtitle={
+              selectedDateFilter === "all"
+                ? `${selectedTab.charAt(0).toUpperCase() + selectedTab.slice(1)} orders appear here.`
+                : "Try a wider date filter to see older orders."
+            }
           />
         }
         renderItem={({ item }) => {
@@ -268,6 +305,27 @@ export default function FarmerOrdersScreen({ navigation }) {
   );
 }
 
+function DateFilterBar({ selectedDateFilter, onSelect }) {
+  return (
+    <View style={styles.filterBar}>
+      {DATE_FILTERS.map((filter) => {
+        const active = selectedDateFilter === filter.key;
+        return (
+          <TouchableOpacity
+            key={filter.key}
+            onPress={() => onSelect(filter.key)}
+            style={[styles.filterChip, active && styles.filterChipActive]}
+          >
+            <Text style={[styles.filterChipText, active && styles.filterChipTextActive]}>
+              {filter.label}
+            </Text>
+          </TouchableOpacity>
+        );
+      })}
+    </View>
+  );
+}
+
 function InfoCell({ label, value }) {
   return (
     <View style={styles.infoCell}>
@@ -329,6 +387,34 @@ const styles = StyleSheet.create({
     color: colors.textTertiary,
   },
   tabBadgeTextActive: {
+    color: colors.black,
+  },
+
+  filterBar: {
+    flexDirection: "row",
+    gap: spacing.sm,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.md,
+    backgroundColor: colors.bg,
+  },
+  filterChip: {
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+    borderRadius: radius.pill,
+    borderWidth: 1,
+    borderColor: colors.border,
+    backgroundColor: colors.surface,
+  },
+  filterChipActive: {
+    backgroundColor: colors.white,
+    borderColor: colors.white,
+  },
+  filterChipText: {
+    fontSize: 12,
+    fontWeight: "700",
+    color: colors.textSecondary,
+  },
+  filterChipTextActive: {
     color: colors.black,
   },
 

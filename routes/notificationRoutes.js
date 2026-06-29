@@ -10,6 +10,7 @@ const {
   getUnreadCount,
   markAsRead,
   markAllAsRead,
+  deleteNotifications,
   deleteNotification,
 } = require("../controllers/notificationController");
 
@@ -35,6 +36,12 @@ router.patch(
   "/:id/read",
   authMiddleware,
   markAsRead
+);
+
+router.delete(
+  "/delete-bulk",
+  authMiddleware,
+  deleteNotifications
 );
 
 router.delete(
